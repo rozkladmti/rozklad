@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Розклад: Stable Final</title>
+    <title>Розклад МІТ</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -213,7 +213,7 @@
 
     <div class="top-bar">
         <div class="header-left">
-            <h2>📅 Розклад</h2>
+            <h2>📅 Розклад МІТ</h2>
             <div id="role-badge" class="status-badge st-guest"><i class="fa-solid fa-user"></i> Гість</div>
             <div id="draft-alert" class="status-badge" style="display:none; background:#fef9c3; color:#a16207; border:1px solid #facc15; cursor:pointer;" onclick="startCompare()">
                 <i class="fa-solid fa-bell"></i> Є пропозиції!
@@ -235,7 +235,7 @@
                 <button class="btn-sync" onclick="openLinksModal()" title="Отримати посилання для викладачів"><i class="fa-solid fa-link"></i> Посилання</button>
                 <button class="btn-sync" onclick="openSearchModal()" title="Знайти розклад"><i class="fa-solid fa-magnifying-glass"></i> Пошук</button>
                 <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
-                <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти (Live)</button>
+                <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
                 <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
             </div>
 
@@ -271,7 +271,7 @@
 
     <div class="modal-overlay" id="loginModal">
         <div class="modal-box">
-            <div class="modal-header">Вхід для лаборанта</div>
+            <div class="modal-header">Вхід для адміна</div>
             <div class="form-group">
                 <input type="password" id="adminPass" class="form-input" placeholder="Введіть пароль" autocomplete="new-password">
             </div>
@@ -900,4 +900,5 @@
         init();
     </script>
 </body>
+
 </html>
