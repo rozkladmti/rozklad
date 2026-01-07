@@ -796,11 +796,11 @@
                 actionsHtml = `
                 <div class="card-actions">
                     <div class="action-btn btn-move" data-tooltip="Перемістити" onclick="${moveCall}"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
-                    <div class="action-btn" data-tooltip="Обміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
+                    <div class="action-btn" data-tooltip="Поміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
                     <div class="action-btn" data-tooltip="Редагувати" onclick="${editCall}"><i class="fa-solid fa-pen"></i></div>
                     <div class="action-btn" data-tooltip="Видалити" onclick="${deleteCall}"><i class="fa-solid fa-trash"></i></div>
                 </div>
-                <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Обміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
+                <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Поміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
             } else if (isDiffCard && !['moved-source','context','processed'].includes(lesson._status)) {
                  actionsHtml = `<div class="diff-actions"><div class="btn-approve" style="background:#dcfce7; color:#166534; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer;" data-tooltip="Прийняти" onclick="acceptDiff('${lesson.id}')"><i class="fa-solid fa-check"></i></div><div class="btn-reject" style="background:#fee2e2; color:#991b1b; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer;" data-tooltip="Відхилити" onclick="rejectDiff('${lesson.id}')"><i class="fa-solid fa-xmark"></i></div></div>`;
             }
@@ -966,4 +966,5 @@
     </script>
 </body>
 </html>
+
 
