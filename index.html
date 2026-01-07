@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Розклад: Stable Final</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { 
+            --univ-blue: #0f172a; 
+            --bg-color: #f1f5f9; 
+            --card-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --swap-mode-bg: #ecfdf5; --swap-mode-border: #4ade80;
+            --move-mode-bg: #eff6ff; --move-mode-border: #60a5fa;
+            --slot-bg: #f8fafc; --slot-hatch: #f1f5f9;
+            --live-text: #854d0e; --live-color: #eab308; --live-bg: #fefce8; --live-border: #facc15;
+            
+            --diff-added: #dcfce7; --diff-added-border: #22c55e;
+            --diff-removed: #fee2e2; --diff-removed-border: #ef4444;
+            --diff-changed: #ffedd5; --diff-changed-border: #f97316;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); margin: 0; padding: 1rem; color: #334155; }
+        
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; box-shadow: var(--card-shadow); margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        h2 { font-size: 1.25rem; font-weight: 800; color: var(--univ-blue); margin: 0; }
+        
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+        .st-guest { background: #e2e8f0; color: #475569; }
+        .st-admin { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+
+        .cloud-status { font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 20px; transition: all 0.3s; }
+        .status-saved { color: #059669; background: #d1fae5; }
+        .status-pending { color: #d97706; background: #fef3c7; }
+        .status-error { color: #dc2626; background: #fee2e2; }
+
+        .data-controls { display: flex; gap: 8px; align-items: center; }
+        .btn-sync { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s; }
+        .btn-sync:hover { background: #e2e8f0; transform: translateY(-1px); }
+        .btn-primary { background: var(--univ-blue); color: white; border-color: var(--univ-blue); }
+        .btn-primary:hover { background: #1e293b; }
+        .btn-manual-save { border-color: #bbf7d0; color: #166534; }
+        .btn-manual-save:hover { background: #dcfce7; }
+        .btn-export { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
+        .btn-backup { color: #4f46e5; border-color: #c7d2fe; }
+        
+        .admin-controls { display: none; gap: 8px; align-items: center;}
+        .guest-controls { display: flex; gap: 8px; align-items: center;}
+        body.is-admin .admin-controls { display: flex; }
+        body.is-admin .guest-controls { display: none; }
+
+        .week-switcher { display: flex; background: #f1f5f9; padding: 3px; border-radius: 8px; }
+        .week-btn { padding: 6px 16px; border: none; background: transparent; font-size: 0.9rem; font-weight: 700; color: #94a3b8; cursor: pointer; border-radius: 6px; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .week-btn.active { background: white; color: var(--univ-blue); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+        #action-panel, #filter-panel { display: none; position: absolute; top: 110%; left: 0; right: 0; padding: 0.5rem; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 100; text-align: center; font-weight: 600; font-size: 0.9rem; align-items: center; justify-content: center; gap: 1rem; }
+        #action-panel.mode-swap { background: var(--swap-mode-bg); border: 2px solid var(--swap-mode-border); color: #064e3b; }
+        #action-panel.mode-move { background: var(--move-mode-bg); border: 2px solid var(--move-mode-border); color: #1e40af; }
+        #action-panel.show { display: flex; }
+        #filter-panel { background: #eff6ff; border: 2px solid #3b82f6; color: #1e3a8a; }
+        #filter-panel.show { display: flex; }
+
+        #compare-panel { display: none; background: #fff7ed; border: 2px solid #f97316; color: #c2410c; flex-direction: column; gap: 10px; padding: 15px; border-radius: 0.75rem; margin-bottom: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        #compare-panel.show { display: flex; }
+        .compare-header { display: flex; justify-content: space-between; align-items: center; width: 100%; border-bottom: 1px solid #fed7aa; padding-bottom: 8px; }
+        .compare-legend { display: flex; gap: 15px; font-size: 0.85rem; align-items: center; }
+        .leg-item { display: flex; align-items: center; gap: 5px; font-weight: 600; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .compare-actions { display: flex; gap: 10px; }
+
+        .schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; align-items: start; }
+        .day-column { background: #e2e8f0; border-radius: 0.75rem; padding: 0.5rem; min-height: 80vh; display: flex; flex-direction: column; gap: 0.5rem; transition: background 0.3s; }
+        .day-column.current-day { background: var(--live-bg); border: 1px solid var(--live-border); }
+        .day-header { text-align: center; padding: 0.5rem; font-weight: 700; color: var(--univ-blue); background: rgba(255,255,255,0.7); border-radius: 0.5rem; font-size: 0.95rem; }
+        
+        .time-slot { background-color: var(--slot-bg); background-image: repeating-linear-gradient(45deg, var(--slot-bg), var(--slot-bg) 10px, var(--slot-hatch) 10px, var(--slot-hatch) 20px); border-radius: 0.5rem; padding: 0.4rem; min-height: 90px; border: 2px dashed #cbd5e1; position: relative; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.4rem; }
+        .time-slot.drag-over { background-image: none; background-color: white; border-color: #3b82f6; border-style: solid; }
+        
+        body.mode-move .time-slot:not(:has(.lesson-card)) { border-color: #60a5fa; cursor: pointer; background: #eff6ff; background-image: none; border-style: solid; }
+        body.mode-swap .lesson-card { cursor: pointer; box-shadow: 0 0 0 2px #4ade80; }
+        
+        .time-slot.current-now { background-image: none; background-color: white; border: 2px solid var(--live-border); border-style: solid; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.2); }
+        .time-slot.current-now::after { content: 'ЗАРАЗ'; position: absolute; bottom: 4px; right: 4px; font-size: 9px; font-weight: 800; color: var(--live-text); opacity: 0.9; pointer-events: none; }
+        .time-slot.current-now .slot-number-badge { background-color: var(--live-color); }
+
+        .slot-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .slot-number-badge { width: 20px; height: 20px; border-radius: 50%; background-color: #94a3b8; color: white; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .time-text { font-size: 10px; font-weight: 600; color: #94a3b8; }
+        .add-btn-slot { margin-top: auto; width: 100%; text-align: center; padding: 2px; border-radius: 4px; color: #cbd5e1; cursor: pointer; font-size: 16px; }
+        .time-slot:hover .add-btn-slot { color: #3b82f6; background: rgba(255,255,255,0.8); }
+
+        .lesson-card { background: white; border-radius: 0.4rem; padding: 0.5rem; cursor: grab; box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative; transition: transform 0.2s, opacity 0.2s, box-shadow 0.2s; border-left: 4px solid #cbd5e1; display: flex; flex-direction: column; gap: 2px; }
+        .lesson-card[data-type="Лекція"] { border-left-color: #f59e0b; }
+        .lesson-card[data-type="Лабораторна"] { border-left-color: #10b981; }
+        .lesson-card[data-type="Практична"] { border-left-color: #3b82f6; }
+        .lesson-card[data-type="Семінар"] { border-left-color: #8b5cf6; }
+        .lesson-card:hover { transform: translateY(-1px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 10; }
+        
+        body.spotlight-active .lesson-card { opacity: 0.2; pointer-events: none; filter: grayscale(0.5); }
+        body.spotlight-active .lesson-card.highlighted { opacity: 1; pointer-events: auto; filter: none; transform: scale(1.03); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); z-index: 50; border: 1px solid #3b82f6; }
+        .lesson-card.action-source { opacity: 0.6 !important; pointer-events: none; filter: grayscale(0.8); }
+
+        .diff-added { background-color: var(--diff-added) !important; border: 2px solid var(--diff-added-border); }
+        .diff-changed { background-color: var(--diff-changed) !important; border: 2px solid var(--diff-changed-border); }
+        .diff-removed { background-color: var(--diff-removed) !important; border: 2px solid var(--diff-removed-border); opacity: 0.6; filter: grayscale(0.6); pointer-events: none; }
+        .diff-removed::after { content: 'БУЛО'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-15deg); color: #dc2626; font-weight: 800; font-size: 0.9rem; opacity: 0.6; pointer-events: none; border: 2px solid #dc2626; padding: 2px 4px; border-radius: 4px; }
+        
+        .diff-context { opacity: 0.4; filter: grayscale(1); pointer-events: none; }
+        .diff-processed { opacity: 1; filter: none; border: 2px solid #cbd5e1; }
+
+        @keyframes soft-pulse { 0% { background-color: transparent; } 50% { background-color: #fecaca; color: #b91c1c; } 100% { background-color: transparent; } }
+        .lesson-card.conflict { border-left-color: #ef4444 !important; background-color: #fff1f2; box-shadow: 0 0 0 1px #fda4af; }
+        .conflict-blinker { animation: soft-pulse 2s infinite ease-in-out; border-radius: 4px; padding: 0 4px; margin: 0 -4px; }
+
+        .card-top-row { display: flex; align-items: center; justify-content: flex-start; gap: 8px; margin-bottom: 2px; padding-right: 20px; }
+        .group-badge { font-size: 10px; font-weight: 700; color: #475569; background: #f1f5f9; padding: 1px 4px; border-radius: 3px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent; max-width: 65%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: inline-block; }
+        .group-badge:hover { background: #e2e8f0; border-color: #cbd5e1; max-width: none; position: relative; z-index: 20; }
+        .type-badge { font-size: 9px; font-weight: 700; text-transform: uppercase; padding: 1px 5px; border-radius: 8px; }
+        .lesson-card[data-type="Лекція"] .type-badge { background: #fef3c7; color: #d97706; }
+        .lesson-card[data-type="Лабораторна"] .type-badge { background: #d1fae5; color: #059669; }
+        .lesson-card[data-type="Практична"] .type-badge { background: #dbeafe; color: #2563eb; }
+        .lesson-card[data-type="Семінар"] .type-badge { background: #ede9fe; color: #7c3aed; }
+        .lesson-subject { font-size: 11px; font-weight: 700; color: #0f172a; line-height: 1.25; margin-bottom: 2px; }
+        .lesson-footer { font-size: 9px; color: #64748b; display: flex; flex-direction: column; gap: 1px; }
+        .info-row { display: flex; align-items: center; gap: 4px; border-radius: 2px; }
+        .teacher-row { cursor: pointer; padding: 0 2px; margin-left: -2px; transition: background 0.2s; }
+        .teacher-row:hover { background: #e2e8f0; color: #0f172a; }
+        
+        .card-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.1s; }
+        .lesson-card:hover .card-actions { opacity: 1; }
+        .action-btn { width: 20px; height: 20px; background: white; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: 10px; }
+        .action-btn:hover { border-color: #64748b; color: #0f172a; background: #f8fafc; }
+        .btn-move { color: #3b82f6; background: #eff6ff; border-color: #bfdbfe; }
+        .btn-move:hover { background: #dbeafe; color: #1d4ed8; border-color: #60a5fa; }
+        
+        .mobile-actions { display: none; }
+        .mobile-menu-dropdown { display: none; position: absolute; top: 25px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 100; min-width: 150px; }
+        .mobile-menu-dropdown.show { display: block; }
+        .mobile-menu-item { padding: 8px 12px; font-size: 12px; font-weight: 600; color: #334155; border-bottom: 1px solid #f1f5f9; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .mobile-menu-item:last-child { border-bottom: none; }
+        .mobile-menu-item:active { background: #f8fafc; }
+
+        .diff-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 4px; z-index: 20; }
+        .btn-approve { background: #dcfce7; border: 1px solid #22c55e; color: #166534; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; }
+        .btn-approve:hover { background: #22c55e; color: white; }
+        .btn-reject { background: #fee2e2; border: 1px solid #ef4444; color: #991b1b; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px; cursor: pointer; }
+        .btn-reject:hover { background: #ef4444; color: white; }
+
+        .note-text { font-size: 9px; color: #d97706; margin-top: 2px; font-style: italic; border-top: 1px solid #f1f5f9; padding-top: 2px;}
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.open { display: flex; }
+        .modal-box { background: white; padding: 1.5rem; border-radius: 0.75rem; width: 380px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-header { font-size: 1.1rem; font-weight: 700; color: var(--univ-blue); margin-bottom: 1rem; }
+        .form-group { margin-bottom: 0.8rem; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 0.3rem; }
+        .form-input { width: 100%; padding: 0.6rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+        .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 0.9rem;}
+        .btn-primary { background: var(--univ-blue); color: white; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .btn-success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+        .stats-container { display: flex; flex-direction: column; gap: 1.5rem; max-height: 70vh; overflow-y: auto; padding-right: 5px; }
+        .stat-section { border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; }
+        .stat-section:last-child { border-bottom: none; }
+        .stat-title { font-size: 0.9rem; font-weight: 700; color: var(--univ-blue); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; font-size: 0.85rem; }
+        .stat-label { width: 35%; color: #334155; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .stat-bar-container { width: 55%; background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; }
+        .stat-bar { height: 100%; border-radius: 4px; }
+        .stat-value { width: 10%; text-align: right; font-weight: 700; color: #0f172a; }
+        .bar-blue { background: #3b82f6; } .bar-green { background: #10b981; } .bar-orange { background: #f59e0b; } .bar-red { background: #ef4444; } .bar-purple { background: #8b5cf6; } .bar-gray { background: #cbd5e1; }
+
+        @media (max-width: 768px) {
+            .schedule-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .top-bar { flex-direction: column; gap: 1rem; padding: 1rem; align-items: stretch; }
+            .header-left { flex-direction: column; gap: 1rem; width: 100%; }
+            .data-controls { width: 100%; justify-content: space-between; margin-top: 0.5rem; flex-wrap: wrap; }
+            .week-switcher { width: 100%; justify-content: center; }
+            .modal-box { width: 90%; padding: 1rem; }
+            .day-header { position: sticky; top: 0; z-index: 20; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+            h2 { font-size: 1.1rem; text-align: center; }
+            .day-column { min-height: auto; }
+            .card-actions { display: none !important; }
+            .mobile-actions { display: block; position: absolute; top: 4px; right: 4px; }
+            .card-top-row { padding-right: 25px; }
+        }
+    </style>
+</head>
+<body onclick="handleBodyClick(event)">
+
+    <div id="compare-panel">
+        <div class="compare-header">
+            <div style="font-weight:700; display:flex; align-items:center; gap:8px;"><i class="fa-solid fa-code-compare"></i> Порівняння пропозицій</div>
+            <div class="compare-actions">
+                <button class="btn btn-secondary" style="padding:6px 12px; font-size:0.8rem;" onclick="exitCompare()">Закрити</button>
+                <button class="btn btn-success" style="padding:6px 12px; font-size:0.8rem;" onclick="saveMergedChanges()"><i class="fa-solid fa-check"></i> Зберегти оброблені зміни</button>
+            </div>
+        </div>
+        <div class="compare-legend">
+            <div class="leg-item"><div class="dot" style="background:#22c55e;"></div> Нове</div>
+            <div class="leg-item"><div class="dot" style="background:#f97316;"></div> Змінено</div>
+            <div class="leg-item"><div class="dot" style="background:#ef4444;"></div> Видалено</div>
+            <div style="font-style:italic; font-size:0.8rem; margin-left:10px;">Необроблені залишаться в чернетці.</div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div class="header-left">
+            <h2>📅 Розклад</h2>
+            <div id="role-badge" class="status-badge st-guest"><i class="fa-solid fa-user"></i> Гість</div>
+            <div id="draft-alert" class="status-badge" style="display:none; background:#fef9c3; color:#a16207; border:1px solid #facc15; cursor:pointer;" onclick="startCompare()">
+                <i class="fa-solid fa-bell"></i> Є пропозиції!
+            </div>
+            <div id="cloudStatus" class="cloud-status status-saved" title="Статус синхронізації">
+                <i class="fa-solid fa-cloud-check"></i> <span>Готово</span>
+            </div>
+        </div>
+        
+        <div class="controls-right" style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+            <div class="guest-controls">
+                <button class="btn-sync" onclick="openSearchModal()" title="Знайти розклад"><i class="fa-solid fa-magnifying-glass"></i> Пошук</button>
+                <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
+                <button class="btn-sync btn-primary" onclick="guestPropose()" title="Надіслати зміни"><i class="fa-solid fa-paper-plane"></i> Запропонувати</button>
+                <button class="btn-sync" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
+            </div>
+
+            <div class="admin-controls">
+                <button class="btn-sync" onclick="openLinksModal()" title="Отримати посилання для викладачів"><i class="fa-solid fa-link"></i> Посилання</button>
+                <button class="btn-sync" onclick="openSearchModal()" title="Знайти розклад"><i class="fa-solid fa-magnifying-glass"></i> Пошук</button>
+                <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
+                <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти (Live)</button>
+                <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
+            </div>
+
+            <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
+            <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
+            <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
+            <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
+                <i class="fa-solid fa-upload"></i>
+                <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="uploadBackup(this)">
+            </label>
+        </div>
+        
+        <div class="week-switcher">
+            <button class="week-btn active" id="btn-week-1" onclick="setWeek(1)">Тиждень I</button>
+            <button class="week-btn" id="btn-week-2" onclick="setWeek(2)">Тиждень II</button>
+        </div>
+        
+        <div id="action-panel">
+            <span id="action-msg"></span>
+            <button onclick="cancelAction()" style="background:white; border:none; color:inherit; font-weight:700; padding:4px 8px; border-radius:4px; cursor:pointer;">Скасувати</button>
+        </div>
+        
+        <div id="filter-panel"><span id="filter-msg"><i class="fa-solid fa-filter"></i> Фільтр</span><button onclick="clearHighlight()" style="background:white; border:none; color:#1e3a8a; font-weight:700; padding:4px 8px; border-radius:4px; cursor:pointer;">Скинути (Esc)</button></div>
+    </div>
+
+    <div class="schedule-grid" id="schedule-container">
+        <div class="day-column" id="day-1"><div class="day-header">Понеділок</div></div>
+        <div class="day-column" id="day-2"><div class="day-header">Вівторок</div></div>
+        <div class="day-column" id="day-3"><div class="day-header">Середа</div></div>
+        <div class="day-column" id="day-4"><div class="day-header">Четвер</div></div>
+        <div class="day-column" id="day-5"><div class="day-header">П'ятниця</div></div>
+    </div>
+
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-box">
+            <div class="modal-header">Вхід для лаборанта</div>
+            <div class="form-group">
+                <input type="password" id="adminPass" class="form-input" placeholder="Введіть пароль" autocomplete="new-password">
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeLoginModal()">Скасувати</button>
+                <button class="btn btn-primary" onclick="processLogin()">Увійти</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-box">
+            <div class="modal-header" id="modalTitle">Пара</div>
+            <div class="form-group"><label class="form-label">Група</label><input class="form-input" type="text" id="inputGroup" list="groupsList" placeholder="КН-11..."> <datalist id="groupsList"></datalist></div>
+            <div class="form-group"><label class="form-label">Дисципліна</label><input class="form-input" type="text" id="inputSubject" list="subjectsList" placeholder="Назва..."><datalist id="subjectsList"></datalist></div>
+            <div class="form-group"><label class="form-label">Тип</label><select class="form-input" id="inputType" onchange="toggleTeacher2()"><option value="Лекція">Лекція</option><option value="Лабораторна">Лабораторна</option><option value="Практична">Практична</option><option value="Семінар">Семінар</option></select></div>
+            <div class="form-group"><label class="form-label">Викладач</label><input class="form-input" type="text" id="inputTeacher" list="teachersList" placeholder="Прізвище..."><datalist id="teachersList"></datalist></div>
+            <div class="form-group" id="teacher2Group" style="display:none;"><label class="form-label">Другий викладач</label><input class="form-input" type="text" id="inputTeacher2" list="teachersList"></div>
+            <div class="form-group"><label class="form-label">Аудиторія</label><select class="form-input" id="inputRoomSelect" onchange="toggleCustomRoom()"><option value="" disabled selected>Оберіть...</option><optgroup label="Лекційні"><option value="custom">Вказати вручну...</option></optgroup><optgroup label="Комп'ютерні класи"><option value="Комп. клас 1">Комп. клас 1</option><option value="Комп. клас 2">Комп. клас 2</option><option value="Комп. клас 3">Комп. клас 3</option></optgroup><optgroup label="Практикуми"><option value="Практикум 1">Практикум 1</option><option value="Практикум 2">Практикум 2</option><option value="Практикум 3">Практикум 3</option></optgroup></select><div id="customRoomGroup" style="display:none; margin-top:0.5rem;"><input class="form-input" type="text" id="inputRoomNumber" placeholder="Номер"></div></div>
+            <div class="form-group"><label class="form-label">Примітка</label><textarea class="form-input" id="inputNote" style="resize:vertical; min-height:50px;"></textarea></div>
+            <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal()">Закрити</button><button class="btn btn-primary" onclick="saveLesson()">Зберегти</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="statsModal"><div class="modal-box" style="width: 500px;"><div class="modal-header">Статистика (Тиждень <span id="statsWeekNum"></span>)</div><div class="stats-container" id="statsContent"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeStats()">Закрити</button></div></div></div>
+
+    <div class="modal-overlay" id="searchModal">
+        <div class="modal-box" style="width: 350px;">
+            <div class="modal-header">Пошук розкладу</div>
+            
+            <div class="form-group">
+                <label class="form-label">Викладач</label>
+                <div style="display:flex; gap:5px;">
+                    <input class="form-input" type="text" id="searchTeacherInput" list="teachersList" placeholder="Оберіть прізвище...">
+                    <button class="btn btn-primary" onclick="applySearch('teacher')">OK</button>
+                </div>
+            </div>
+
+            <div style="text-align:center; margin: 10px 0; color:#94a3b8; font-size:0.8rem;">— АБО —</div>
+
+            <div class="form-group">
+                <label class="form-label">Група</label>
+                <div style="display:flex; gap:5px;">
+                    <input class="form-input" type="text" id="searchGroupInput" list="groupsList" placeholder="Оберіть групу...">
+                    <button class="btn btn-primary" onclick="applySearch('group')">OK</button>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="document.getElementById('searchModal').classList.remove('open')">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="linksModal">
+        <div class="modal-box" style="width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div class="modal-header">Посилання для викладачів</div>
+            <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;" id="linksListContent"></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="document.getElementById('linksModal').classList.remove('open')">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === ВАЖЛИВО! Вставте сюди URL Вашого скрипта ===
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyr9sUjBPCI3HyfEk9G3jrybFMFUNAJwOzXx_92xtD-E-tL9J0j9vhAHvFAguyV8sZsPQ/exec';
+        const ADMIN_PASSWORD = 'admin';
+
+        const TIME_SLOTS = [
+            { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
+            { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
+            { id: 3, num: 3, time: "12:10 - 13:30", start: 12*60+10, end: 13*60+30 }, 
+            { id: 4, num: 4, time: "13:45 - 15:05", start: 13*60+45, end: 15*60+5 },
+            { id: 5, num: 5, time: "15:20 - 16:40", start: 15*60+20, end: 16*60+40 }
+        ];
+
+        let currentWeek = 1;
+        let liveLessons = [];
+        let draftLessons = null;
+        let lessons = []; 
+        let tempLiveLessons = []; 
+        let processedIds = new Set(); 
+        let teachersList = []; let subjectsList = []; let groupsList = [];
+        
+        let isAdmin = false;
+        let isCompareMode = false;
+        let actionState = { active: false, type: null, sourceId: null };
+        let highlightState = { active: false };
+        let editState = { isNew: true, lessonId: null, day: null, slot: null };
+        let autoSaveTimer = null;
+        let unsavedChanges = false;
+
+        function init() {
+            if(localStorage.getItem('isAdmin') === 'true') setAdminMode(true);
+            loadFromLocal();
+            renderGrid();
+            renderLessons();
+            checkConflicts();
+            updateLiveStatus();
+            setInterval(updateLiveStatus, 30000);
+            loadFromGoogle(); 
+            window.addEventListener('beforeunload', function (e) { if (unsavedChanges) { e.preventDefault(); e.returnValue = ''; } });
+            document.addEventListener('dragend', () => { document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('drag-over')); });
+        }
+
+        function sanitizeData(data) {
+            if (!Array.isArray(data)) return [];
+            return data
+                .map(item => {
+                    const normalized = {};
+                    for (const key in item) {
+                        normalized[key.toLowerCase()] = item[key];
+                    }
+                    return normalized;
+                })
+                .filter(l => l && l.id)
+                .map(l => ({
+                    ...l,
+                    week: parseInt(l.week) || 1,
+                    day: parseInt(l.day) || 1,
+                    slot: parseInt(l.slot) || 1,
+                    note: l.note || '',
+                    teacher2: l.teacher2 || ''
+                }));
+        }
+
+        function showLogin() { 
+            const m = document.getElementById('loginModal'); const i = document.getElementById('adminPass'); 
+            m.classList.add('open'); i.value=''; i.focus(); 
+            i.onkeydown = (e) => { if(e.key==='Enter') processLogin(); if(e.key==='Escape') closeLoginModal(); }; 
+        }
+        function closeLoginModal() { document.getElementById('loginModal').classList.remove('open'); document.getElementById('adminPass').value=''; }
+        function processLogin() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === ADMIN_PASSWORD) {
+                setAdminMode(true);
+                closeLoginModal();
+                reloadAll();
+            } else { alert('Невірний пароль'); document.getElementById('adminPass').value=''; }
+        }
+        function logout() {
+            setAdminMode(false);
+            exitCompare();
+            reloadAll();
+        }
+        function setAdminMode(val) {
+            isAdmin = val;
+            localStorage.setItem('isAdmin', val);
+            document.body.classList.toggle('is-admin', val);
+            const badge = document.getElementById('role-badge');
+            badge.className = val ? 'status-badge st-admin' : 'status-badge st-guest';
+            badge.innerHTML = val ? '<i class="fa-solid fa-user-shield"></i> Адмін' : '<i class="fa-solid fa-user"></i> Гість';
+            updateDraftAlert();
+        }
+        
+        function checkRealDifferences() {
+            if (!draftLessons || draftLessons.length === 0) return false;
+            if (liveLessons.length !== draftLessons.length) return true;
+            const liveMap = new Map(liveLessons.map(l => [String(l.id), l]));
+            const draftMap = new Map(draftLessons.map(l => [String(l.id), l]));
+            for (let [id, draftL] of draftMap) {
+                const liveL = liveMap.get(id);
+                if (!liveL) return true;
+                if (JSON.stringify(liveL) !== JSON.stringify(draftL)) return true;
+            }
+            for (let [id, liveL] of liveMap) {
+                if (!draftMap.has(id)) return true;
+            }
+            return false;
+        }
+
+        function updateDraftAlert() {
+            const draftAlert = document.getElementById('draft-alert');
+            if (isAdmin && checkRealDifferences()) {
+                draftAlert.style.display = 'flex';
+            } else {
+                draftAlert.style.display = 'none';
+            }
+        }
+
+        function loadFromLocal() {
+            const data = localStorage.getItem('uni_schedule_data');
+            if (data) liveLessons = sanitizeData(JSON.parse(data));
+            else liveLessons = [{ id: 'l1', group: 'Приклад', subject: 'Введіть дані', type: 'Лекція', teacher: '', room: '', day: 1, slot: 1, week: 1 }];
+            
+            lessons = JSON.parse(JSON.stringify(liveLessons));
+
+            const tData = localStorage.getItem('uni_teachers_list'); if(tData) teachersList = JSON.parse(tData);
+            const sData = localStorage.getItem('uni_subjects_list'); if(sData) subjectsList = JSON.parse(sData);
+            const gData = localStorage.getItem('uni_groups_list'); if(gData) groupsList = JSON.parse(gData);
+            populateDatalists();
+        }
+
+        async function loadFromGoogle() {
+            if(unsavedChanges && !confirm("Незбережені локальні зміни будуть втрачені. Оновити?")) return;
+            updateCloudStatus('pending', 'Перевірка...');
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                if (data.result === 'error') throw new Error(data.error);
+                
+                liveLessons = sanitizeData(data.live?.lessons || []);
+                let rawDraft = data.draft ? sanitizeData(data.draft.lessons) : [];
+                draftLessons = (rawDraft.length > 0) ? rawDraft : null;
+                
+                if(data.live?.teachers) teachersList = data.live.teachers;
+                if(data.live?.subjects) subjectsList = data.live.subjects;
+                if(data.live?.groups) groupsList = data.live.groups;
+
+                localStorage.setItem('uni_teachers_list', JSON.stringify(teachersList));
+                localStorage.setItem('uni_groups_list', JSON.stringify(groupsList));
+                localStorage.setItem('uni_subjects_list', JSON.stringify(subjectsList));
+
+                if (!isCompareMode) {
+                    lessons = JSON.parse(JSON.stringify(liveLessons));
+                }
+                
+                unsavedChanges = false;
+                saveToLocal(); 
+                populateDatalists(); renderLessons(); checkConflicts(); updateDraftAlert();
+                
+                // --- Додано: Перевірка URL параметрів ---
+                checkUrlParams();
+
+                updateCloudStatus('saved', 'Актуально');
+            } catch (e) { console.error(e); updateCloudStatus('error', 'Помилка оновлення'); }
+        }
+
+        function reloadAll() { loadFromGoogle(); }
+
+        function triggerAutoSave() { unsavedChanges = true; saveToLocal(); updateCloudStatus('pending', 'Локальні зміни...'); }
+        function manualSave() { adminSave(); }
+        
+        function saveToLocal() {
+            localStorage.setItem('uni_schedule_data', JSON.stringify(liveLessons)); 
+        }
+
+        async function guestPropose() {
+            if(!confirm("Надіслати зміни на затвердження?")) return;
+            await sendData('propose', { lessons: lessons });
+            alert("Пропозицію надіслано!");
+            unsavedChanges = false;
+            reloadAll(); 
+        }
+
+        async function adminSave() {
+            if(!confirm("Зберегти зміни у ПУБЛІЧНИЙ розклад?")) return;
+            await sendData('admin_save', { lessons: lessons });
+            alert("Збережено!");
+            unsavedChanges = false;
+            reloadAll();
+        }
+
+        async function saveMergedChanges() {
+            if(!confirm("Зберегти оброблені зміни?")) return;
+            
+            const newLive = JSON.parse(JSON.stringify(tempLiveLessons));
+            const allDiffs = getDiffIds(liveLessons, draftLessons);
+            let nextDraftLessons = [];
+
+            const allProcessed = Array.from(allDiffs).every(id => processedIds.has(id));
+            
+            if (!allProcessed) {
+                nextDraftLessons = draftLessons; 
+            }
+
+            await sendData('commit_changes', {
+                live: { lessons: newLive },
+                draft: { lessons: nextDraftLessons }
+            });
+            
+            alert("Зміни успішно застосовано!");
+            exitCompare();
+            reloadAll();
+        }
+
+        function getDiffIds(liveArr, draftArr) {
+            const diffs = new Set();
+            const liveMap = new Map(liveArr.map(l => [String(l.id), l]));
+            const draftMap = new Map(draftArr.map(l => [String(l.id), l]));
+            
+            for (let [id, d] of draftMap) {
+                const l = liveMap.get(id);
+                if (!l || JSON.stringify(l) !== JSON.stringify(d)) diffs.add(id);
+            }
+            for (let [id, l] of liveMap) {
+                if (!draftMap.has(id)) diffs.add(id);
+            }
+            return diffs;
+        }
+
+        async function rejectDraft() {
+            if(!confirm("Відхилити ВСІ пропозиції та очистити чернетку?")) return;
+            await sendData('reject', {});
+            exitCompare();
+            reloadAll();
+        }
+
+        async function sendData(action, payload) {
+            updateCloudStatus('pending', 'Відправка...');
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, data: payload })
+                });
+                const res = await response.json();
+                if(res.result === 'error') throw new Error(res.error);
+                updateCloudStatus('saved', 'Виконано');
+            } catch(e) {
+                updateCloudStatus('error', 'Помилка');
+                alert("Помилка: " + e.message);
+            }
+        }
+
+        function startCompare() {
+            if(!draftLessons || draftLessons.length === 0) return;
+            isCompareMode = true;
+            processedIds = new Set(); 
+            document.getElementById('compare-panel').classList.add('show');
+            tempLiveLessons = JSON.parse(JSON.stringify(liveLessons));
+            renderLessons(true); 
+        }
+
+        function exitCompare() {
+            isCompareMode = false;
+            document.getElementById('compare-panel').classList.remove('show');
+            lessons = JSON.parse(JSON.stringify(liveLessons));
+            renderLessons();
+        }
+
+        function acceptDiff(id) {
+            const strId = String(id);
+            const draftItem = draftLessons.find(l => String(l.id) === strId);
+            
+            if (draftItem) {
+                tempLiveLessons = tempLiveLessons.filter(l => String(l.id) !== strId);
+                tempLiveLessons.push(draftItem);
+            } else {
+                tempLiveLessons = tempLiveLessons.filter(l => String(l.id) !== strId);
+            }
+            
+            processedIds.add(strId);
+            renderLessons(true);
+        }
+
+        function rejectDiff(id) {
+            const strId = String(id);
+            const liveItem = liveLessons.find(l => String(l.id) === strId);
+            
+            if (liveItem) {
+                tempLiveLessons = tempLiveLessons.filter(l => String(l.id) !== strId);
+                tempLiveLessons.push(liveItem);
+            } else {
+                tempLiveLessons = tempLiveLessons.filter(l => String(l.id) !== strId);
+            }
+            
+            processedIds.add(strId);
+            renderLessons(true);
+        }
+
+        function renderLessons(doDiff = false) {
+            document.querySelectorAll('.lesson-card').forEach(el => el.remove());
+            
+            let displayList = [];
+            
+            if (doDiff) {
+                const draftMap = new Map((draftLessons||[]).map(l => [String(l.id), l]));
+                const liveMap = new Map(liveLessons.map(l => [String(l.id), l]));
+                
+                const allIds = new Set([...draftMap.keys(), ...liveMap.keys()]);
+                
+                allIds.forEach(id => {
+                    // --- НОВА ЛОГІКА: Якщо оброблено, показуємо результат ---
+                    if (processedIds.has(id)) {
+                        const finalLesson = tempLiveLessons.find(l => String(l.id) === id);
+                        if (finalLesson) {
+                            displayList.push({ ...finalLesson, _status: 'processed' });
+                        }
+                        return; 
+                    }
+                    // --------------------------------------------------------
+
+                    const draftL = draftMap.get(id);
+                    const liveL = liveMap.get(id);
+
+                    if (!liveL && draftL) {
+                        displayList.push({ ...draftL, _status: 'added' });
+                    }
+                    else if (liveL && !draftL) {
+                        displayList.push({ ...liveL, _status: 'removed' });
+                    }
+                    else if (liveL && draftL) {
+                        if (JSON.stringify(liveL) !== JSON.stringify(draftL)) {
+                            displayList.push({ ...draftL, _status: 'changed' });
+                            displayList.push({ ...liveL, _status: 'moved-source', _ghostId: id });
+                        } else {
+                            displayList.push({ ...liveL, _status: 'context' });
+                        }
+                    }
+                });
+            } else {
+                displayList = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek));
+            }
+
+            const visible = displayList.filter(l => parseInt(l.week) === parseInt(currentWeek));
+
+            visible.forEach(lesson => {
+                const slotEl = document.querySelector(`.time-slot[data-day="${lesson.day}"][data-slot="${lesson.slot}"]`);
+                if (slotEl) {
+                    const card = createCard(lesson, doDiff);
+                    if (lesson._status === 'moved-source') slotEl.appendChild(card);
+                    else slotEl.insertBefore(card, slotEl.querySelector('.add-btn-slot'));
+                }
+            });
+            if(highlightState.active) reapplyHighlight();
+        }
+
+        function createCard(lesson, doDiff = false) {
+            const div = document.createElement('div');
+            div.className = 'lesson-card';
+            div.draggable = !doDiff; 
+            div.id = lesson._ghostId ? 'ghost-'+lesson.id : lesson.id; 
+            div.dataset.type = lesson.type; div.dataset.group = lesson.group;
+            div.dataset.teacher = lesson.teacher; div.dataset.teacher2 = lesson.teacher2;
+            
+            if (actionState.active && actionState.sourceId === lesson.id) div.classList.add('action-source');
+            
+            let isDiffCard = false;
+            if (doDiff) {
+                if (lesson._status === 'removed' || lesson._status === 'moved-source') { div.classList.add('diff-removed'); isDiffCard = true; }
+                else if (lesson._status === 'added') { div.classList.add('diff-added'); isDiffCard = true; }
+                else if (lesson._status === 'changed') { div.classList.add('diff-changed'); isDiffCard = true; }
+                else if (lesson._status === 'context') { div.classList.add('diff-context'); isDiffCard = true; }
+                else if (lesson._status === 'processed') { div.classList.add('diff-processed'); isDiffCard = true; }
+            }
+
+            let roomDisplay = lesson.type === 'Лекція' && lesson.room ? 'Ауд. ' + lesson.room : lesson.room;
+            let teacherDisplay = lesson.teacher; if (lesson.teacher2) teacherDisplay += `, ${lesson.teacher2}`;
+            let noteHtml = lesson.note ? `<div class="note-text"><i class="fa-solid fa-circle-exclamation"></i> ${lesson.note}</div>` : '';
+
+            let actionsHtml = '';
+            if (!doDiff) {
+                const esc = (s) => s.replace(/'/g, "\\'");
+                const moveCall = `startMove('${lesson.id}', '${esc(lesson.subject)}', event); closeAllMobileMenus();`;
+                const swapCall = `startSwap('${lesson.id}', '${esc(lesson.subject)}', event); closeAllMobileMenus();`;
+                const editCall = `openEditById('${lesson.id}'); closeAllMobileMenus();`;
+                const deleteCall = `deleteLesson('${lesson.id}', event); closeAllMobileMenus();`;
+
+                actionsHtml = `
+                <div class="card-actions">
+                    <div class="action-btn btn-move" title="Перемістити" onclick="${moveCall}"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
+                    <div class="action-btn" title="Обміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
+                    <div class="action-btn" title="Редагувати" onclick="${editCall}"><i class="fa-solid fa-pen"></i></div>
+                    <div class="action-btn" title="Видалити" onclick="${deleteCall}"><i class="fa-solid fa-trash"></i></div>
+                </div>
+                <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Обміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
+            } 
+            else if (isDiffCard && lesson._status !== 'moved-source' && lesson._status !== 'context' && lesson._status !== 'processed') {
+                const isGhost = (lesson._status === 'removed');
+                const targetId = lesson.id; 
+                const acceptFn = `acceptDiff('${targetId}')`;
+                const rejectFn = `rejectDiff('${targetId}')`;
+                actionsHtml = `<div class="diff-actions"><div class="btn-approve" onclick="${acceptFn}" title="Прийняти"><i class="fa-solid fa-check"></i></div><div class="btn-reject" onclick="${rejectFn}" title="Відхилити"><i class="fa-solid fa-xmark"></i></div></div>`;
+            }
+
+            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" title="${lesson.group}">${lesson.group || '-'}</span><span class="type-badge">${lesson.type}</span></div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row room-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${noteHtml}</div>`;
+            
+            if (!doDiff) {
+                div.addEventListener('dragstart', handleDragStart);
+                div.addEventListener('click', (e) => {
+                    if(!e.target.closest('.action-btn') && !e.target.closest('.group-badge') && !e.target.closest('.teacher-row') && !e.target.closest('.mobile-menu-item')) {
+                        if (actionState.active) {
+                            if (actionState.type === 'swap') performSwap(lesson.id);
+                            else alert("Ви в режимі Переміщення. Клікніть на ПОРОЖНІЙ слот.");
+                        } else openEditModal(lesson);
+                    }
+                });
+            }
+            return div;
+        }
+
+        // --- BASIC FUNCTIONS ---
+        function populateDatalists() { const fill = (id, arr) => { const el = document.getElementById(id); el.innerHTML = ''; if(Array.isArray(arr)) arr.forEach(i => { const o = document.createElement('option'); o.value = i; el.appendChild(o); }); }; fill('teachersList', teachersList); fill('subjectsList', subjectsList); fill('groupsList', groupsList); }
+        function updateCloudStatus(type, text) { const el = document.getElementById('cloudStatus'); el.className = 'cloud-status'; if(type === 'saved') { el.classList.add('status-saved'); el.innerHTML = `<i class="fa-solid fa-cloud-check"></i> <span>${text}</span>`; } else if (type === 'pending') { el.classList.add('status-pending'); el.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> <span>${text}</span>`; } else { el.classList.add('status-error'); el.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> <span>${text}</span>`; } }
+        function setWeek(w) { 
+            currentWeek = parseInt(w); 
+            document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active')); 
+            document.getElementById(`btn-week-${w}`).classList.add('active'); 
+            renderLessons(isCompareMode); 
+            checkConflicts(); 
+            if(highlightState.active) reapplyHighlight(); 
+        }
+        function renderGrid() { const days = [1, 2, 3, 4, 5]; days.forEach(day => { const col = document.getElementById(`day-${day}`); const header = col.querySelector('.day-header'); col.innerHTML = ''; col.appendChild(header); TIME_SLOTS.forEach(slot => { const d = document.createElement('div'); d.className = 'time-slot'; d.dataset.day = day; d.dataset.slot = slot.id; d.innerHTML = `<div class="slot-header-row"><div class="slot-number-badge">${slot.num}</div><div class="time-text">${slot.time}</div></div><div class="add-btn-slot">+</div>`; d.addEventListener('dragover', handleDragOver); d.addEventListener('drop', handleDrop); d.addEventListener('click', (e) => handleSlotClick(day, slot.id, e)); col.appendChild(d); }); }); }
+        
+        function handleDragStart(e) { if(actionState.active || isCompareMode) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', this.id); actionState.type='move'; }
+        function handleDragOver(e) { e.preventDefault(); if(!actionState.active && !isCompareMode) this.classList.add('drag-over'); }
+        function handleDragLeave(e) { this.classList.remove('drag-over'); }
+        function handleDrop(e) { e.preventDefault(); this.classList.remove('drag-over'); if(isCompareMode) return; const id = e.dataTransfer.getData('text/plain'); const slotEl = e.target.closest('.time-slot'); if(id && slotEl) { const idx = lessons.findIndex(l => l.id === id); if(idx > -1) { lessons[idx].day = parseInt(slotEl.dataset.day); lessons[idx].slot = parseInt(slotEl.dataset.slot); lessons[idx].week = parseInt(currentWeek); finalizeAction(); } } }
+        function startMove(id, title, e) { e.stopPropagation(); clearHighlight(); actionState = { active: true, type: 'move', sourceId: id }; document.body.classList.add('mode-move'); showActionPanel(`Переміщення: <b>${title}</b>`, 'mode-move'); renderLessons(); }
+        function startSwap(id, title, e) { e.stopPropagation(); clearHighlight(); actionState = { active: true, type: 'swap', sourceId: id }; document.body.classList.add('mode-swap'); showActionPanel(`Обмін: <b>${title}</b>`, 'mode-swap'); renderLessons(); }
+        function showActionPanel(html, cssClass) { const p = document.getElementById('action-panel'); p.className = ''; p.classList.add(cssClass, 'show'); p.querySelector('span').innerHTML = html; }
+        
+        function performMoveToEmpty(day, slot) { 
+            const idx = lessons.findIndex(l => l.id === actionState.sourceId);
+            if (idx > -1) { 
+                lessons[idx].day = day; 
+                lessons[idx].slot = slot; 
+                lessons[idx].week = parseInt(currentWeek); 
+            }
+            finalizeAction();
+        }
+
+        function performSwap(tId) { 
+            if (actionState.sourceId === tId) return; 
+            const sIdx = lessons.findIndex(l => l.id === actionState.sourceId); 
+            const tIdx = lessons.findIndex(l => l.id === tId); 
+            if (sIdx > -1 && tIdx > -1) { 
+                const tmp = { d: lessons[sIdx].day, s: lessons[sIdx].slot, w: lessons[sIdx].week }; 
+                lessons[sIdx].day = lessons[tIdx].day; lessons[sIdx].slot = lessons[tIdx].slot; lessons[sIdx].week = lessons[tIdx].week; 
+                lessons[tIdx].day = tmp.d; lessons[tIdx].slot = tmp.s; lessons[tIdx].week = tmp.w; 
+            } 
+            finalizeAction(); 
+        }
+
+        function finalizeAction() { cancelAction(); triggerAutoSave(); renderLessons(); checkConflicts(); }
+        function cancelAction() { actionState = { active: false, type: null, sourceId: null }; document.body.classList.remove('mode-move', 'mode-swap'); document.getElementById('action-panel').className = ''; renderLessons(); }
+        function handleSlotClick(day, slot, e) { if(isCompareMode) return; if (e.target.closest('.lesson-card')) return; if (actionState.active) { if (actionState.type === 'move') performMoveToEmpty(day, slot); else alert("Ви в режимі Обміну. Клікніть на ІНШУ ПАРУ."); } else openNewModal(day, slot); }
+
+        function checkConflicts() { document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('conflict')); document.querySelectorAll('.conflict-blinker').forEach(el => el.classList.remove('conflict-blinker')); if(isCompareMode) return; const activeLessons = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek)); const slotsMap = {}; activeLessons.forEach(l => { const k = `${l.day}-${l.slot}`; if (!slotsMap[k]) slotsMap[k] = []; slotsMap[k].push(l); }); for (const key in slotsMap) { const groupLessons = slotsMap[key]; if (groupLessons.length > 1) { for (let i = 0; i < groupLessons.length; i++) { for (let j = i + 1; j < groupLessons.length; j++) { const l1 = groupLessons[i]; const l2 = groupLessons[j]; const c1 = document.getElementById(l1.id); const c2 = document.getElementById(l2.id); if(!c1 || !c2) continue; let conflictFound = false; if (l1.room && l2.room && l1.room === l2.room) { conflictFound = true; c1.querySelector('.room-row')?.classList.add('conflict-blinker'); c2.querySelector('.room-row')?.classList.add('conflict-blinker'); } const t1 = [l1.teacher, l1.teacher2].filter(t => t); const t2 = [l2.teacher, l2.teacher2].filter(t => t); if (t1.some(t => t2.includes(t))) { conflictFound = true; c1.querySelector('.teacher-row')?.classList.add('conflict-blinker'); c2.querySelector('.teacher-row')?.classList.add('conflict-blinker'); } if (l1.group && l2.group) { const g1 = l1.group.split(',').map(s => s.trim()); const g2 = l2.group.split(',').map(s => s.trim()); if (g1.some(g => g2.includes(g))) { conflictFound = true; c1.querySelector('.group-badge')?.classList.add('conflict-blinker'); c2.querySelector('.group-badge')?.classList.add('conflict-blinker'); } } if (conflictFound) { c1.classList.add('conflict'); c2.classList.add('conflict'); } } } } } }
+        function toggleMobileMenu(id, e) { e.stopPropagation(); const menu = document.getElementById(`menu-${id}`); document.querySelectorAll('.mobile-menu-dropdown').forEach(m => { if(m.id !== `menu-${id}`) m.classList.remove('show'); }); menu.classList.toggle('show'); }
+        function closeAllMobileMenus() { document.querySelectorAll('.mobile-menu-dropdown').forEach(m => m.classList.remove('show')); }
+        function openEditById(id) { const l = lessons.find(x => x.id === id); if(l) openEditModal(l); }
+        function activateHighlight(type, val, e) { e.stopPropagation(); if(!val) return; highlightState = { active: true, type, value: val }; document.body.classList.add('spotlight-active'); const p = document.getElementById('filter-panel'); p.classList.add('show'); document.getElementById('filter-msg').innerHTML = `<i class="fa-solid fa-filter"></i> ${val}`; reapplyHighlight(); }
+        function reapplyHighlight() { document.querySelectorAll('.lesson-card').forEach(c => { c.classList.remove('highlighted'); let match = false; if(highlightState.type === 'group' && c.dataset.group && c.dataset.group.includes(highlightState.value)) match = true; if(highlightState.type === 'teacher' && (c.dataset.teacher === highlightState.value || c.dataset.teacher2 === highlightState.value)) match = true; if(match) c.classList.add('highlighted'); }); }
+        function clearHighlight() { highlightState.active = false; document.body.classList.remove('spotlight-active'); document.getElementById('filter-panel').classList.remove('show'); document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('highlighted')); }
+        function handleBodyClick(e) { if(!e.target.closest('.mobile-actions')) closeAllMobileMenus(); if(highlightState.active && !e.target.closest('.lesson-card') && !e.target.closest('.top-bar') && !e.target.closest('.modal-box')) clearHighlight(); }
+        function updateLiveStatus() { const now = new Date(); const d = now.getDay(); const m = now.getHours()*60 + now.getMinutes(); document.querySelectorAll('.time-slot.drag-over').forEach(el => el.classList.remove('drag-over')); document.querySelectorAll('.day-column').forEach(c => c.classList.remove('current-day')); if(d>=1 && d<=5) document.getElementById(`day-${d}`).classList.add('current-day'); document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('current-now')); if(d>=1 && d<=5) { const slot = TIME_SLOTS.find(s => m >= s.start && m <= s.end); if(slot) document.querySelector(`.time-slot[data-day="${d}"][data-slot="${slot.id}"]`)?.classList.add('current-now'); } }
+        function exportToImage() { const el = document.getElementById('schedule-container'); const h = el.style.height; el.style.height = 'auto'; html2canvas(el, { scale: 2, backgroundColor: '#f1f5f9' }).then(c => { const a = document.createElement('a'); a.download = `schedule_week_${currentWeek}.png`; a.href = c.toDataURL(); a.click(); el.style.height = h; }); }
+        function downloadBackup() { const data = JSON.stringify({ lessons, teachersList, subjectsList, groupsList }, null, 2); const blob = new Blob([data], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function uploadBackup(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); lessons = sanitizeData(data.lessons); saveToLocal(); renderLessons(); } catch (err) { alert('Error'); } }; reader.readAsText(file); }
+        function openNewModal(d, s) { editState = { isNew: true, lessonId: null, day: d, slot: s }; clearForm(); document.getElementById('modalTitle').innerText = 'Нова пара'; document.getElementById('addModal').classList.add('open'); document.getElementById('inputGroup').focus(); }
+        function openEditModal(l) { editState = { isNew: false, lessonId: l.id }; document.getElementById('modalTitle').innerText = 'Редагування'; document.getElementById('inputGroup').value = l.group; document.getElementById('inputSubject').value = l.subject; document.getElementById('inputType').value = l.type; document.getElementById('inputTeacher').value = l.teacher; document.getElementById('inputTeacher2').value = l.teacher2; document.getElementById('inputNote').value = l.note; const sel = document.getElementById('inputRoomSelect'); if(Array.from(sel.options).some(o=>o.value===l.room)) { sel.value = l.room; document.getElementById('inputRoomNumber').value = ''; } else { sel.value = 'custom'; document.getElementById('inputRoomNumber').value = l.room; } toggleCustomRoom(); toggleTeacher2(); document.getElementById('addModal').classList.add('open'); }
+        function saveLesson() { const g = document.getElementById('inputGroup').value, s = document.getElementById('inputSubject').value, t = document.getElementById('inputTeacher').value, t2 = document.getElementById('inputTeacher2').value, note = document.getElementById('inputNote').value, type = document.getElementById('inputType').value; let r = document.getElementById('inputRoomSelect').value; if(r==='custom') r = document.getElementById('inputRoomNumber').value; if(!s) { alert('Введіть назву'); return; } if(editState.isNew) lessons.push({ id: 'l'+Date.now(), week: currentWeek, day: editState.day, slot: editState.slot, group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); else { const i = lessons.findIndex(l => l.id === editState.lessonId); if(i>-1) Object.assign(lessons[i], { group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); } triggerAutoSave(); closeModal(); renderLessons(); checkConflicts(); }
+        function deleteLesson(id, e) { e.stopPropagation(); if(confirm('Видалити?')) { lessons = lessons.filter(l=>l.id!==id); triggerAutoSave(); renderLessons(); checkConflicts(); } }
+        function closeModal() { document.getElementById('addModal').classList.remove('open'); }
+        function clearForm() { ['inputGroup','inputSubject','inputTeacher','inputTeacher2','inputNote','inputRoomNumber'].forEach(id=>document.getElementById(id).value=''); document.getElementById('inputRoomSelect').value=''; document.getElementById('inputType').value='Лекція'; toggleCustomRoom(); toggleTeacher2(); }
+        function toggleCustomRoom() { document.getElementById('customRoomGroup').style.display = document.getElementById('inputRoomSelect').value === 'custom' ? 'block' : 'none'; }
+        function toggleTeacher2() { document.getElementById('teacher2Group').style.display = document.getElementById('inputType').value === 'Лабораторна' ? 'block' : 'none'; }
+        function openStats() { document.getElementById('statsWeekNum').innerText = currentWeek === 1 ? 'I' : 'II'; const c = document.getElementById('statsContent'); c.innerHTML = ''; const active = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek)); if(!active.length) { c.innerHTML = '<div style="text-align:center;color:gray;">Пусто</div>'; } else { const dc = {1:0,2:0,3:0,4:0,5:0}; active.forEach(l => dc[l.day]++); const maxD = Math.max(...Object.values(dc)) || 1; let h = `<div class="stat-section"><div class="stat-title">По днях</div>`; ['Пн','Вт','Ср','Чт','Пт'].forEach((d,i) => h+=`<div class="stat-row"><div class="stat-label">${d}</div><div class="stat-bar-container"><div class="stat-bar bar-blue" style="width:${(dc[i+1]/maxD)*100}%"></div></div><div class="stat-value">${dc[i+1]}</div></div>`); h+='</div>'; c.innerHTML = h; } document.getElementById('statsModal').classList.add('open'); }
+        function closeStats() { document.getElementById('statsModal').classList.remove('open'); }
+        document.addEventListener('keydown', e => { if(e.key==='Escape') { if(actionState.active) cancelAction(); else if(highlightState.active) clearHighlight(); else closeModal(); closeStats(); } });
+
+        // --- ЛОГІКА ПЕРСОНАЛЬНИХ ПОСИЛАНЬ ---
+        function checkUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            const teacherName = params.get('teacher');
+            const groupName = params.get('group');
+
+            setTimeout(() => {
+                if (teacherName) {
+                    activateHighlight('teacher', teacherName, { stopPropagation: ()=>{} });
+                } else if (groupName) {
+                    activateHighlight('group', groupName, { stopPropagation: ()=>{} });
+                }
+            }, 500);
+        }
+
+        function openLinksModal() {
+            const container = document.getElementById('linksListContent');
+            container.innerHTML = '';
+            
+            if (!teachersList || teachersList.length === 0) {
+                container.innerHTML = '<div>Список викладачів порожній. Спочатку завантажте дані.</div>';
+            } else {
+                const baseUrl = window.location.href.split('?')[0];
+                
+                teachersList.forEach(name => {
+                    const link = `${baseUrl}?teacher=${encodeURIComponent(name)}`;
+                    
+                    const row = document.createElement('div');
+                    row.style.cssText = "display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #eee;";
+                    
+                    row.innerHTML = `
+                        <span style="font-weight:600;">${name}</span>
+                        <button class="btn-sync" style="font-size:0.8rem;" onclick="copyLink('${link}')">
+                            <i class="fa-regular fa-copy"></i> Копіювати
+                        </button>
+                    `;
+                    container.appendChild(row);
+                });
+            }
+            
+            document.getElementById('linksModal').classList.add('open');
+        }
+
+        function copyLink(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Посилання скопійовано!");
+            });
+        }
+
+        function openSearchModal() {
+            document.getElementById('searchTeacherInput').value = '';
+            document.getElementById('searchGroupInput').value = '';
+            document.getElementById('searchModal').classList.add('open');
+            document.getElementById('searchTeacherInput').focus();
+        }
+
+        function applySearch(type) {
+            let val = '';
+            if (type === 'teacher') {
+                val = document.getElementById('searchTeacherInput').value;
+            } else {
+                val = document.getElementById('searchGroupInput').value;
+            }
+
+            if (val) {
+                activateHighlight(type, val, { stopPropagation: ()=>{} });
+                document.getElementById('searchModal').classList.remove('open');
+            } else {
+                alert("Введіть значення!");
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
