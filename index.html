@@ -29,7 +29,12 @@
         }
         body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); margin: 0; padding: 1rem; color: #334155; }
         
-        .top-bar { display: flex; justify-content: space-between; align-items: center; background: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; box-shadow: var(--card-shadow); margin-bottom: 1.5rem; flex-wrap: wrap; gap: 10px; }
+        .top-bar { background: white; padding: 1rem 1.5rem; border-radius: 0.75rem; box-shadow: var(--card-shadow); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+        
+        .top-bar-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .top-bar-row.first { border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; }
+        .top-bar-row.second { justify-content: center; }
+        
         .header-left { display: flex; align-items: center; gap: 15px; }
         h2 { font-size: 1.25rem; font-weight: 800; color: var(--univ-blue); margin: 0; }
         
@@ -84,10 +89,40 @@
         .schedule-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.75rem; align-items: start; }
         .day-column { background: #e2e8f0; border-radius: 0.75rem; padding: 0.5rem; min-height: 80vh; display: flex; flex-direction: column; gap: 0.5rem; transition: background 0.3s; }
         .day-column.current-day { background: var(--live-bg); border: 1px solid var(--live-border); }
-        .day-header { text-align: center; padding: 0.5rem; font-weight: 700; color: var(--univ-blue); background: rgba(255,255,255,0.7); border-radius: 0.5rem; font-size: 0.95rem; }
+        .day-header { 
+            text-align: center; 
+            padding: 0.5rem; 
+            font-weight: 700; 
+            color: var(--univ-blue); 
+            background: rgba(255,255,255,0.95); 
+            backdrop-filter: blur(10px);
+            border-radius: 0.5rem; 
+            font-size: 0.95rem; 
+            position: sticky; 
+            top: 0; 
+            z-index: 20; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
         
         .time-slot { background-color: var(--slot-bg); background-image: repeating-linear-gradient(45deg, var(--slot-bg), var(--slot-bg) 10px, var(--slot-hatch) 10px, var(--slot-hatch) 20px); border-radius: 0.5rem; padding: 0.4rem; min-height: 90px; border: 2px dashed #cbd5e1; position: relative; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.4rem; }
         .time-slot.drag-over { background-image: none; background-color: white; border-color: #3b82f6; border-style: solid; }
+        
+        /* Блокування активних зон в режимах маніпуляцій */
+        body.mode-move .lesson-card .group-badge,
+        body.mode-move .lesson-card .teacher-row,
+        body.mode-move .lesson-card .room-row,
+        body.mode-move .lesson-card .card-actions,
+        body.mode-swap .lesson-card .group-badge,
+        body.mode-swap .lesson-card .teacher-row,
+        body.mode-swap .lesson-card .room-row,
+        body.mode-swap .lesson-card .card-actions,
+        body.mode-duplicate .lesson-card .group-badge,
+        body.mode-duplicate .lesson-card .teacher-row,
+        body.mode-duplicate .lesson-card .room-row,
+        body.mode-duplicate .lesson-card .card-actions {
+            pointer-events: none !important;
+            opacity: 0.5;
+        }
         
         /* Режим переміщення */
         body.mode-move .time-slot { cursor: pointer; }
@@ -170,10 +205,23 @@
         
         .card-actions { position: absolute; top: 4px; right: 4px; display: flex; gap: 2px; opacity: 0; transition: opacity 0.1s; }
         .lesson-card:hover .card-actions { opacity: 1; }
-        .action-btn { width: 20px; height: 20px; background: white; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: 10px; }
+        .action-btn { width: 20px; height: 20px; background: white; border: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 4px; color: #94a3b8; cursor: pointer; font-size: 10px; transition: all 0.2s; }
         .action-btn:hover { border-color: #64748b; color: #0f172a; background: #f8fafc; }
+        
+        .btn-duplicate { color: #d97706; background: #fef3c7; border-color: #fde68a; }
+        .btn-duplicate:hover { background: #fde047; color: #a16207; border-color: #fbbf24; }
+        
         .btn-move { color: #3b82f6; background: #eff6ff; border-color: #bfdbfe; }
         .btn-move:hover { background: #dbeafe; color: #1d4ed8; border-color: #60a5fa; }
+        
+        .btn-swap { color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe; }
+        .btn-swap:hover { background: #ede9fe; color: #6d28d9; border-color: #c4b5fd; }
+        
+        .btn-edit { color: #06b6d4; background: #ecfeff; border-color: #a5f3fc; }
+        .btn-edit:hover { background: #cffafe; color: #0e7490; border-color: #67e8f9; }
+        
+        .btn-delete { color: #ef4444; background: #fef2f2; border-color: #fecaca; }
+        .btn-delete:hover { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
         
         .mobile-actions { display: none; }
         .mobile-menu-dropdown { display: none; position: absolute; top: 25px; right: 0; background: white; border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); z-index: 100; min-width: 150px; }
@@ -271,13 +319,14 @@
         /* ОНОВЛЕНИЙ БЛОК ДЛЯ МОБІЛЬНИХ */
         @media (max-width: 768px) {
             .schedule-grid { grid-template-columns: 1fr; gap: 2rem; }
-            .top-bar { flex-direction: column; gap: 1rem; padding: 1rem; align-items: stretch; }
+            .top-bar { padding: 1rem; }
+            .top-bar-row { flex-direction: column; align-items: stretch; }
+            .top-bar-row.first { padding-bottom: 1rem; }
             .header-left { flex-direction: column; gap: 1rem; width: 100%; text-align: center; }
             .controls-right { width: 100%; justify-content: center; } /* Центруємо кнопки */
             .guest-controls, .admin-controls { justify-content: center; } /* Центруємо групи кнопок */
             .week-switcher { width: 100%; justify-content: center; }
             .modal-box { width: 90%; padding: 1rem; }
-            .day-header { position: sticky; top: 0; z-index: 20; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
             h2 { font-size: 1.1rem; text-align: center; }
             .day-column { min-height: auto; }
             .card-actions { display: none !important; }
@@ -385,45 +434,51 @@
     </div>
 
     <div class="top-bar">
-        <div class="header-left">
-            <h2>🎓 Розклад кафедри МІТ</h2>
-            <div id="role-badge" class="status-badge st-guest"><i class="fa-solid fa-user"></i> Гість</div>
-            <div id="draft-alert" class="status-badge" style="display:none; background:#fef9c3; color:#a16207; border:1px solid #facc15; cursor:pointer;" onclick="startCompare()">
-                <i class="fa-solid fa-bell"></i> Є запит на зміну!
+        <!-- Перший рядок: Назва, статуси, перемикач тижнів -->
+        <div class="top-bar-row first">
+            <div class="header-left">
+                <h2>🎓 Розклад кафедри МІТ</h2>
+                <div id="role-badge" class="status-badge st-guest"><i class="fa-solid fa-user"></i> Гість</div>
+                <div id="draft-alert" class="status-badge" style="display:none; background:#fef9c3; color:#a16207; border:1px solid #facc15; cursor:pointer;" onclick="startCompare()">
+                    <i class="fa-solid fa-bell"></i> Є запит на зміну!
+                </div>
+                <div id="cloudStatus" class="cloud-status status-saved" title="Статус синхронізації">
+                    <i class="fa-solid fa-cloud-check"></i> <span>Готово</span>
+                </div>
             </div>
-            <div id="cloudStatus" class="cloud-status status-saved" title="Статус синхронізації">
-                <i class="fa-solid fa-cloud-check"></i> <span>Готово</span>
+            
+            <div class="week-switcher">
+                <button class="week-btn active" id="btn-week-1" onclick="setWeek(1)">Тиждень I</button>
+                <button class="week-btn" id="btn-week-2" onclick="setWeek(2)">Тиждень II</button>
             </div>
         </div>
         
-        <div class="controls-right">
-            <div class="guest-controls">
-                <button class="btn-sync" id="filterBtnGuest" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
-                <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
-                <button class="btn-sync btn-primary" onclick="guestPropose()" title="Надіслати зміни"><i class="fa-solid fa-paper-plane"></i> Запропонувати зміни</button>
-                <button class="btn-sync" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
-            </div>
+        <!-- Другий рядок: Кнопки управління -->
+        <div class="top-bar-row second">
+            <div class="controls-right">
+                <div class="guest-controls">
+                    <button class="btn-sync" id="filterBtnGuest" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
+                    <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
+                    <button class="btn-sync btn-primary" onclick="guestPropose()" title="Надіслати зміни"><i class="fa-solid fa-paper-plane"></i>Запропонувати зміни</button>
+                    <button class="btn-sync" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
+                </div>
 
-            <div class="admin-controls">
-                <button class="btn-sync" onclick="openLinksModal()" title="Посилання та PDF для викладачів"><i class="fa-solid fa-user-group"></i> Викладачі</button>
-                <button class="btn-sync" id="filterBtnAdmin" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
-                <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
-                <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
-                <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
-            </div>
+                <div class="admin-controls">
+                    <button class="btn-sync" onclick="openLinksModal()" title="Посилання та PDF для викладачів"><i class="fa-solid fa-user-group"></i> Викладачі</button>
+                    <button class="btn-sync" id="filterBtnAdmin" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
+                    <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
+                    <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
+                    <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
+                </div>
 
-            <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
-            <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
-            <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
-            <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
-                <i class="fa-solid fa-upload"></i>
-                <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="uploadBackup(this)">
-            </label>
-        </div>
-        
-        <div class="week-switcher">
-            <button class="week-btn active" id="btn-week-1" onclick="setWeek(1)">Тиждень I</button>
-            <button class="week-btn" id="btn-week-2" onclick="setWeek(2)">Тиждень II</button>
+                <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
+                <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
+                <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
+                <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
+                    <i class="fa-solid fa-upload"></i>
+                    <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="uploadBackup(this)">
+                </label>
+            </div>
         </div>
         
         <div id="action-panel">
@@ -979,7 +1034,7 @@
             const getTypeDisplay = (type) => {
                 const types = {
                     'Лекція': { short: 'Лк', icon: 'fa-chalkboard-user' },
-                    'Лабораторна': { short: 'Лаб', icon: 'fa-flask' },
+                    'Лабораторна': { short: 'Лаб', icon: 'fa-desktop' },
                     'Практична': { short: 'Пр', icon: 'fa-laptop-code' },
                     'Семінар': { short: 'Сем', icon: 'fa-users' }
                 };
@@ -1002,11 +1057,11 @@
 
                 actionsHtml = `
                 <div class="card-actions">
-                    <div class="action-btn btn-duplicate" data-tooltip="Дублювати" onclick="duplicateLesson('${lesson.id}', event); closeAllMobileMenus();" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-copy"></i></div>
+                    <div class="action-btn btn-duplicate" data-tooltip="Дублювати" onclick="duplicateLesson('${lesson.id}', event); closeAllMobileMenus();"><i class="fa-solid fa-copy"></i></div>
                     <div class="action-btn btn-move" data-tooltip="Перемістити" onclick="${moveCall}"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
-                    <div class="action-btn" data-tooltip="Поміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
-                    <div class="action-btn" data-tooltip="Редагувати" onclick="${editCall}"><i class="fa-solid fa-pen"></i></div>
-                    <div class="action-btn" data-tooltip="Видалити" onclick="${deleteCall}"><i class="fa-solid fa-trash"></i></div>
+                    <div class="action-btn btn-swap" data-tooltip="Поміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
+                    <div class="action-btn btn-edit" data-tooltip="Редагувати" onclick="${editCall}"><i class="fa-solid fa-pen"></i></div>
+                    <div class="action-btn btn-delete" data-tooltip="Видалити" onclick="${deleteCall}"><i class="fa-solid fa-trash"></i></div>
                 </div>
                 <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="duplicateLesson('${lesson.id}', event); closeAllMobileMenus();"><i class="fa-solid fa-copy"></i> Дублювати</div><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Поміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
             } else if (isDiffCard && !['moved-source','context','processed'].includes(lesson._status)) {
@@ -1014,7 +1069,7 @@
             }
 
             // --- І ТУТ ТЕЖ (для груп): замість title пишемо data-tooltip ---
-            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge" data-tooltip="${lesson.type}"><i class="fa-solid ${typeInfo.icon}"></i> ${typeInfo.short}</span></div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
+            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge" data-tooltip="${lesson.type}"><i class="fa-solid ${typeInfo.icon}"></i> ${typeInfo.short}</span></div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row room-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
             
             if (!doDiff) {
                 div.addEventListener('dragstart', handleDragStart);
@@ -2071,7 +2126,7 @@
                         
                         /* Верхній колонтитул */
                         .page-header {
-                            border-bottom: 2px solid #3b82f6;
+                            border-bottom: 2px solid #b8956a;
                             padding-bottom: 12px;
                             margin-bottom: 25px;
                         }
@@ -2079,7 +2134,7 @@
                         .header-title {
                             font-size: 18pt;
                             font-weight: 700;
-                            color: #0f172a;
+                            color: #2d2416;
                             margin: 0 0 8px 0;
                         }
                         
@@ -2088,23 +2143,23 @@
                             grid-template-columns: auto 1fr;
                             gap: 8px;
                             font-size: 10pt;
-                            color: #475569;
+                            color: #5c4d3d;
                         }
                         
                         .header-label {
                             font-weight: 600;
-                            color: #1e293b;
+                            color: #3d3020;
                         }
                         
                         /* Заголовок тижня */
                         .week-title {
                             font-size: 14pt;
                             font-weight: 700;
-                            color: #1e40af;
+                            color: #8b6914;
                             margin: 0 0 15px 0;
                             padding: 8px 12px;
-                            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
-                            border-left: 4px solid #3b82f6;
+                            background: linear-gradient(135deg, #fef3c7 0%, #fef9e7 100%);
+                            border-left: 4px solid #d4a574;
                             border-radius: 4px;
                         }
                         
@@ -2116,40 +2171,40 @@
                             font-size: 10pt;
                         }
                         
-                        /* Світла шапка таблиці */
+                        /* Тепла пастельна шапка таблиці */
                         th { 
-                            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-                            color: white; 
+                            background: linear-gradient(180deg, #e8d5b7 0%, #d4bf9f 100%);
+                            color: #3d3020; 
                             padding: 10px 8px;
                             text-align: left;
-                            font-weight: 600;
-                            border: 1px solid #2563eb;
+                            font-weight: 700;
+                            border: 2px solid #b8956a;
                             font-size: 9.5pt;
                         }
                         
                         td { 
                             padding: 8px;
-                            border: 1px solid #cbd5e1;
+                            border: 1px solid #d4bf9f;
                             vertical-align: top;
                         }
                         
                         tr:nth-child(even) { 
-                            background: #f8fafc; 
+                            background: #faf8f3; 
                         }
                         
                         tr:hover {
-                            background: #e0f2fe;
+                            background: #fef3c7;
                         }
                         
                         /* Підсумки */
                         .summary {
                             margin-top: 15px;
                             padding: 12px 15px;
-                            background: #f1f5f9;
+                            background: #fef9e7;
                             border-radius: 6px;
-                            border-left: 4px solid #64748b;
+                            border-left: 4px solid #b8956a;
                             font-size: 10pt;
-                            color: #334155;
+                            color: #5c4d3d;
                             display: flex;
                             gap: 20px;
                             align-items: center;
@@ -2163,13 +2218,13 @@
                         
                         .summary-value {
                             font-weight: 700;
-                            color: #0f172a;
+                            color: #3d3020;
                             font-size: 12pt;
                         }
                         
                         /* Кнопка друку */
                         .print-btn { 
-                            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                            background: linear-gradient(135deg, #d4a574 0%, #b8956a 100%);
                             color: white; 
                             padding: 12px 24px;
                             border: none; 
@@ -2218,7 +2273,7 @@
                     
                     <!-- Верхній колонтитул з інформацією -->
                     <div class="page-header">
-                        <div class="header-title">📅 Розклад занять</div>
+                        <div class="header-title">Розклад занять</div>
                         <div class="header-info">
                             <span class="header-label">Викладач:</span>
                             <span>${teacherName}</span>
@@ -2260,7 +2315,7 @@
                     
                     <!-- Повторюємо заголовок для другої сторінки -->
                     <div class="page-header">
-                        <div class="header-title">📅 Розклад занять</div>
+                        <div class="header-title">Розклад занять</div>
                         <div class="header-info">
                             <span class="header-label">Викладач:</span>
                             <span>${teacherName}</span>
@@ -2297,9 +2352,9 @@
                     </div>
                     
                     <!-- Загальна статистика внизу другої сторінки -->
-                    <div class="summary" style="margin-top: 30px; border-left-color: #3b82f6;">
+                    <div class="summary" style="margin-top: 30px; border-left-color: #d4a574;">
                         <div class="summary-item">
-                            <span>📊 Загалом за два тижні:</span>
+                            <span>Загалом за два тижні:</span>
                             <span class="summary-value">${teacherLessons.length} пар</span>
                         </div>
                     </div>
@@ -2312,7 +2367,3 @@
     </script>
 </body>
 </html>
-
-
-
-
