@@ -56,6 +56,8 @@
         .btn-manual-save:hover { background: #dcfce7; }
         .btn-export { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
         .btn-backup { color: #4f46e5; border-color: #c7d2fe; }
+        .btn-filter-active { background: #fef3c7 !important; color: #d97706 !important; border-color: #fcd34d !important; }
+        .btn-filter-active:hover { background: #fde68a !important; }
         
         body.is-admin .admin-controls { display: flex; }
         body.is-admin .guest-controls { display: none; }
@@ -87,8 +89,37 @@
         .time-slot { background-color: var(--slot-bg); background-image: repeating-linear-gradient(45deg, var(--slot-bg), var(--slot-bg) 10px, var(--slot-hatch) 10px, var(--slot-hatch) 20px); border-radius: 0.5rem; padding: 0.4rem; min-height: 90px; border: 2px dashed #cbd5e1; position: relative; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.4rem; }
         .time-slot.drag-over { background-image: none; background-color: white; border-color: #3b82f6; border-style: solid; }
         
-        body.mode-move .time-slot:not(:has(.lesson-card)) { border-color: #60a5fa; cursor: pointer; background: #eff6ff; background-image: none; border-style: solid; }
+        /* Режим переміщення */
+        body.mode-move .time-slot { cursor: pointer; }
+        body.mode-move .time-slot.move-available { border-color: #3b82f6; border-style: solid; background: #eff6ff; background-image: none; }
+        body.mode-move .time-slot.move-available:hover { background: #dbeafe; border-color: #2563eb; }
+        body.mode-move .time-slot.move-conflict { border-color: #ef4444; border-style: solid; background: #fef2f2; background-image: none; }
+        body.mode-move .time-slot.move-conflict:hover { background: #fee2e2; border-color: #dc2626; }
+        body.mode-move .time-slot.move-conflict::before { 
+            content: '⚠️'; 
+            position: absolute; 
+            top: 4px; 
+            right: 4px; 
+            font-size: 14px;
+            z-index: 10;
+        }
+        
         body.mode-swap .lesson-card { cursor: pointer; box-shadow: 0 0 0 2px #4ade80; }
+        
+        /* Режим дублювання */
+        body.mode-duplicate .time-slot { cursor: pointer; }
+        body.mode-duplicate .time-slot.duplicate-available { border-color: #22c55e; border-style: solid; background: #f0fdf4; background-image: none; }
+        body.mode-duplicate .time-slot.duplicate-available:hover { background: #dcfce7; border-color: #16a34a; }
+        body.mode-duplicate .time-slot.duplicate-conflict { border-color: #ef4444; border-style: solid; background: #fef2f2; background-image: none; }
+        body.mode-duplicate .time-slot.duplicate-conflict:hover { background: #fee2e2; border-color: #dc2626; }
+        body.mode-duplicate .time-slot.duplicate-conflict::before { 
+            content: '⚠️'; 
+            position: absolute; 
+            top: 4px; 
+            right: 4px; 
+            font-size: 14px;
+            z-index: 10;
+        }
         
         .time-slot.current-now { background-image: none; background-color: white; border: 2px solid var(--live-border); border-style: solid; box-shadow: 0 0 0 4px rgba(250, 204, 21, 0.2); }
         .time-slot.current-now::after { content: 'ЗАРАЗ'; position: absolute; bottom: 4px; right: 4px; font-size: 9px; font-weight: 800; color: var(--live-text); opacity: 0.9; pointer-events: none; }
@@ -310,6 +341,29 @@
             transform: translateX(-50%) translateY(0);
         }
         
+        /* Анімації для повідомлень */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
     </style>
 </head>
 <body onclick="handleBodyClick(event)">
@@ -344,15 +398,15 @@
         
         <div class="controls-right">
             <div class="guest-controls">
-                <button class="btn-sync" onclick="openSearchModal()" title="Знайти розклад"><i class="fa-solid fa-magnifying-glass"></i> Пошук</button>
+                <button class="btn-sync" id="filterBtnGuest" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
                 <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
                 <button class="btn-sync btn-primary" onclick="guestPropose()" title="Надіслати зміни"><i class="fa-solid fa-paper-plane"></i> Запропонувати</button>
                 <button class="btn-sync" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
             </div>
 
             <div class="admin-controls">
-                <button class="btn-sync" onclick="openLinksModal()" title="Отримати посилання для викладачів"><i class="fa-solid fa-link"></i> Посилання</button>
-                <button class="btn-sync" onclick="openSearchModal()" title="Знайти розклад"><i class="fa-solid fa-magnifying-glass"></i> Пошук</button>
+                <button class="btn-sync" onclick="openLinksModal()" title="Посилання та PDF для викладачів"><i class="fa-solid fa-user-group"></i> Викладачі</button>
+                <button class="btn-sync" id="filterBtnAdmin" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
                 <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
                 <button class="btn-sync btn-manual-save" onclick="adminSave()" title="Пряме збереження"><i class="fa-solid fa-floppy-disk"></i> Зберегти</button>
                 <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
@@ -433,37 +487,64 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="searchModal">
-        <div class="modal-box" style="width: 350px;">
-            <div class="modal-header">Пошук розкладу</div>
+
+    <div class="modal-overlay" id="advancedSearchModal">
+        <div class="modal-box" style="width: 450px;">
+            <div class="modal-header">🔍 Розширений пошук</div>
             
             <div class="form-group">
                 <label class="form-label">Викладач</label>
-                <div style="display:flex; gap:5px;">
-                    <input class="form-input" type="text" id="searchTeacherInput" list="teachersList" placeholder="Оберіть прізвище...">
-                    <button class="btn btn-primary" onclick="applySearch('teacher')">OK</button>
-                </div>
+                <input class="form-input" type="text" id="advSearchTeacher" list="teachersList" placeholder="Всі викладачі">
             </div>
-
-            <div style="text-align:center; margin: 10px 0; color:#94a3b8; font-size:0.8rem;">— АБО —</div>
-
+            
             <div class="form-group">
                 <label class="form-label">Група</label>
-                <div style="display:flex; gap:5px;">
-                    <input class="form-input" type="text" id="searchGroupInput" list="groupsList" placeholder="Оберіть групу...">
-                    <button class="btn btn-primary" onclick="applySearch('group')">OK</button>
-                </div>
+                <input class="form-input" type="text" id="advSearchGroup" list="groupsList" placeholder="Всі групи">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Предмет</label>
+                <input class="form-input" type="text" id="advSearchSubject" list="subjectsList" placeholder="Всі предмети">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Тип заняття</label>
+                <select class="form-input" id="advSearchType">
+                    <option value="">Всі типи</option>
+                    <option value="Лекція">Лекція</option>
+                    <option value="Лабораторна">Лабораторна</option>
+                    <option value="Практична">Практична</option>
+                    <option value="Семінар">Семінар</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Аудиторія</label>
+                <input class="form-input" type="text" id="advSearchRoom" placeholder="Всі аудиторії">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">День тижня</label>
+                <select class="form-input" id="advSearchDay">
+                    <option value="">Всі дні</option>
+                    <option value="1">Понеділок</option>
+                    <option value="2">Вівторок</option>
+                    <option value="3">Середа</option>
+                    <option value="4">Четвер</option>
+                    <option value="5">П'ятниця</option>
+                </select>
             </div>
 
             <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="document.getElementById('searchModal').classList.remove('open')">Закрити</button>
+                <button class="btn btn-secondary" onclick="closeAdvancedSearch()">Скасувати</button>
+                <button class="btn btn-primary" onclick="applyAdvancedSearch()">Застосувати</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="linksModal">
         <div class="modal-box" style="width: 600px; max-height: 80vh; display: flex; flex-direction: column;">
-            <div class="modal-header">Посилання для викладачів</div>
+            <div class="modal-header">Посилання та PDF для викладачів</div>
             <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;" id="linksListContent"></div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="document.getElementById('linksModal').classList.remove('open')">Закрити</button>
@@ -857,6 +938,11 @@
             const visible = displayList.filter(l => parseInt(l.week) === parseInt(currentWeek));
 
             visible.forEach(lesson => {
+                // Перевіряємо чи пара відповідає фільтрам
+                if (!matchesAdvancedFilters(lesson)) {
+                    return; // Пропускаємо пари що не відповідають фільтрам
+                }
+                
                 const slotEl = document.querySelector(`.time-slot[data-day="${lesson.day}"][data-slot="${lesson.slot}"]`);
                 if (slotEl) {
                     const card = createCard(lesson, doDiff);
@@ -889,6 +975,19 @@
                 else if (lesson._status==='processed') { div.classList.add('diff-processed'); isDiffCard=true; }
             }
 
+            // Функція для отримання скорочення та іконки типу
+            const getTypeDisplay = (type) => {
+                const types = {
+                    'Лекція': { short: 'Лк', icon: 'fa-chalkboard-user' },
+                    'Лабораторна': { short: 'Лаб', icon: 'fa-flask' },
+                    'Практична': { short: 'Пр', icon: 'fa-laptop-code' },
+                    'Семінар': { short: 'Сем', icon: 'fa-users' }
+                };
+                return types[type] || { short: type, icon: 'fa-book' };
+            };
+            
+            const typeInfo = getTypeDisplay(lesson.type);
+
             let roomDisplay = lesson.type === 'Лекція' && lesson.room ? 'Ауд. ' + lesson.room : lesson.room;
             let teacherDisplay = lesson.teacher; if (lesson.teacher2) teacherDisplay += `, ${lesson.teacher2}`;
             
@@ -903,18 +1002,19 @@
 
                 actionsHtml = `
                 <div class="card-actions">
+                    <div class="action-btn btn-duplicate" data-tooltip="Дублювати" onclick="duplicateLesson('${lesson.id}', event); closeAllMobileMenus();" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-copy"></i></div>
                     <div class="action-btn btn-move" data-tooltip="Перемістити" onclick="${moveCall}"><i class="fa-solid fa-arrows-up-down-left-right"></i></div>
                     <div class="action-btn" data-tooltip="Поміняти" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i></div>
                     <div class="action-btn" data-tooltip="Редагувати" onclick="${editCall}"><i class="fa-solid fa-pen"></i></div>
                     <div class="action-btn" data-tooltip="Видалити" onclick="${deleteCall}"><i class="fa-solid fa-trash"></i></div>
                 </div>
-                <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Поміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
+                <div class="mobile-actions"><button class="action-btn" onclick="toggleMobileMenu('${lesson.id}', event)"><i class="fa-solid fa-ellipsis-vertical"></i></button><div id="menu-${lesson.id}" class="mobile-menu-dropdown"><div class="mobile-menu-item" onclick="duplicateLesson('${lesson.id}', event); closeAllMobileMenus();"><i class="fa-solid fa-copy"></i> Дублювати</div><div class="mobile-menu-item" onclick="${moveCall}"><i class="fa-solid fa-arrow-up-right-from-square"></i> Перемістити</div><div class="mobile-menu-item" onclick="${swapCall}"><i class="fa-solid fa-right-left"></i> Поміняти</div><div class="mobile-menu-item" onclick="${editCall}"><i class="fa-solid fa-pen"></i> Редагувати</div><div class="mobile-menu-item" onclick="${deleteCall}" style="color: #dc2626;"><i class="fa-solid fa-trash"></i> Видалити</div></div></div>`;
             } else if (isDiffCard && !['moved-source','context','processed'].includes(lesson._status)) {
                  actionsHtml = `<div class="diff-actions"><div class="btn-approve" style="background:#dcfce7; color:#166534; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer;" data-tooltip="Прийняти" onclick="acceptDiff('${lesson.id}')"><i class="fa-solid fa-check"></i></div><div class="btn-reject" style="background:#fee2e2; color:#991b1b; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer;" data-tooltip="Відхилити" onclick="rejectDiff('${lesson.id}')"><i class="fa-solid fa-xmark"></i></div></div>`;
             }
 
             // --- І ТУТ ТЕЖ (для груп): замість title пишемо data-tooltip ---
-            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge">${lesson.type}</span></div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
+            div.innerHTML = `<div class="card-top-row"><span class="group-badge" onclick="activateHighlight('group', '${lesson.group}', event)" data-tooltip="${lesson.group || ''}">${lesson.group || '-'}</span><span class="type-badge" data-tooltip="${lesson.type}"><i class="fa-solid ${typeInfo.icon}"></i> ${typeInfo.short}</span></div>${actionsHtml}<div class="lesson-subject">${lesson.subject}</div><div class="lesson-footer"><div class="info-row teacher-row" onclick="activateHighlight('teacher', '${lesson.teacher}', event)"><i class="fa-regular fa-user"></i> ${teacherDisplay}</div><div class="info-row"><i class="fa-solid fa-location-dot"></i> ${roomDisplay}</div>${lesson.note ? `<div style="font-size:9px;color:#d97706;margin-top:2px;">${lesson.note}</div>` : ''}</div>`;
             
             if (!doDiff) {
                 div.addEventListener('dragstart', handleDragStart);
@@ -934,9 +1034,21 @@
             currentWeek = parseInt(w); 
             document.querySelectorAll('.week-btn').forEach(b => b.classList.remove('active')); 
             document.getElementById(`btn-week-${w}`).classList.add('active'); 
+            
             renderLessons(isCompareMode); 
             checkConflicts(); 
-            if(highlightState.active) reapplyHighlight(); 
+            if(highlightState.active) reapplyHighlight();
+            
+            // Якщо в режимі дублювання - оновлюємо підсвічування для нового тижня
+            if (duplicateState.active) {
+                duplicateState.targetWeek = w;
+                highlightSlotsForDuplication(duplicateState.sourceLesson);
+            }
+            
+            // Якщо в режимі переміщення - оновлюємо підсвічування
+            if (actionState.active && actionState.type === 'move' && actionState.sourceLesson) {
+                highlightSlotsForMove(actionState.sourceLesson);
+            }
         }
         function renderGrid() { const days = [1, 2, 3, 4, 5]; days.forEach(day => { const col = document.getElementById(`day-${day}`); const header = col.querySelector('.day-header'); col.innerHTML = ''; col.appendChild(header); TIME_SLOTS[day].forEach(slot => { const d = document.createElement('div'); d.className = 'time-slot'; d.dataset.day = day; d.dataset.slot = slot.id; d.innerHTML = `<div class="slot-header-row"><div class="slot-number-badge">${slot.num}</div><div class="time-text">${slot.time}</div></div><div class="add-btn-slot">+</div>`; d.addEventListener('dragover', handleDragOver); d.addEventListener('drop', handleDrop); d.addEventListener('click', (e) => handleSlotClick(day, slot.id, e)); col.appendChild(d); }); }); }
         
@@ -944,17 +1056,68 @@
         function handleDragOver(e) { e.preventDefault(); if(!actionState.active && !isCompareMode) this.classList.add('drag-over'); }
         function handleDragLeave(e) { this.classList.remove('drag-over'); }
         function handleDrop(e) { e.preventDefault(); this.classList.remove('drag-over'); if(isCompareMode) return; const id = e.dataTransfer.getData('text/plain'); const slotEl = e.target.closest('.time-slot'); if(id && slotEl) { const idx = lessons.findIndex(l => l.id === id); if(idx > -1) { lessons[idx].day = parseInt(slotEl.dataset.day); lessons[idx].slot = parseInt(slotEl.dataset.slot); lessons[idx].week = parseInt(currentWeek); finalizeAction(); } } }
-        function startMove(id, title, e) { e.stopPropagation(); clearHighlight(); actionState = { active: true, type: 'move', sourceId: id }; document.body.classList.add('mode-move'); showActionPanel(`Переміщення: <b>${title}</b>`, 'mode-move'); renderLessons(); }
+        function startMove(id, title, e) { 
+            e.stopPropagation(); 
+            clearHighlight(); 
+            
+            const lesson = lessons.find(l => l.id === id);
+            if (!lesson) return;
+            
+            actionState = { active: true, type: 'move', sourceId: id, sourceLesson: lesson }; 
+            document.body.classList.add('mode-move'); 
+            showActionPanel(`Переміщення: <b>${title}</b>`, 'mode-move'); 
+            renderLessons();
+            
+            // Підсвічуємо всі слоти
+            highlightSlotsForMove(lesson);
+        }
+        
+        function highlightSlotsForMove(sourceLesson) {
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const day = parseInt(slot.dataset.day);
+                const slotNum = parseInt(slot.dataset.slot);
+                const week = currentWeek;
+                
+                // Перевіряємо конфлікти (використовуємо ту саму логіку що для дублювання)
+                const hasConflict = checkDuplicationConflict(sourceLesson, week, day, slotNum);
+                
+                if (hasConflict) {
+                    slot.classList.add('move-conflict');
+                } else {
+                    slot.classList.add('move-available');
+                }
+            });
+        }
+
         function startSwap(id, title, e) { e.stopPropagation(); clearHighlight(); actionState = { active: true, type: 'swap', sourceId: id }; document.body.classList.add('mode-swap'); showActionPanel(`Обмін: <b>${title}</b>`, 'mode-swap'); renderLessons(); }
         function showActionPanel(html, cssClass) { const p = document.getElementById('action-panel'); p.className = ''; p.classList.add(cssClass, 'show'); p.querySelector('span').innerHTML = html; }
         
         function performMoveToEmpty(day, slot) { 
             const idx = lessons.findIndex(l => l.id === actionState.sourceId);
-            if (idx > -1) { 
-                lessons[idx].day = day; 
-                lessons[idx].slot = slot; 
-                lessons[idx].week = parseInt(currentWeek); 
+            if (idx === -1) return;
+            
+            const sourceLesson = lessons[idx];
+            
+            // Перевіряємо конфлікти
+            const hasConflict = checkDuplicationConflict(sourceLesson, currentWeek, day, slot);
+            
+            if (hasConflict) {
+                const conflictMessages = {
+                    'group': `⚠️ Конфлікт: Група ${hasConflict.lesson.group} вже має пару в цей час!\n\n${hasConflict.lesson.subject} (${hasConflict.lesson.teacher})\n\nВсе одно перемістити?`,
+                    'teacher': `⚠️ Конфлікт: Викладач ${hasConflict.lesson.teacher} вже зайнятий в цей час!\n\n${hasConflict.lesson.subject} (${hasConflict.lesson.group})\n\nВсе одно перемістити?`,
+                    'room': `⚠️ Конфлікт: Аудиторія ${hasConflict.lesson.room} вже зайнята в цей час!\n\n${hasConflict.lesson.subject} (${hasConflict.lesson.teacher})\n\nВсе одно перемістити?`
+                };
+                
+                if (!confirm(conflictMessages[hasConflict.type])) {
+                    return;
+                }
             }
+            
+            // Переміщуємо
+            lessons[idx].day = day; 
+            lessons[idx].slot = slot; 
+            lessons[idx].week = parseInt(currentWeek); 
+            
             finalizeAction();
         }
 
@@ -971,8 +1134,30 @@
         }
 
         function finalizeAction() { cancelAction(); triggerAutoSave(); renderLessons(); checkConflicts(); }
-        function cancelAction() { actionState = { active: false, type: null, sourceId: null }; document.body.classList.remove('mode-move', 'mode-swap'); document.getElementById('action-panel').className = ''; renderLessons(); }
-        function handleSlotClick(day, slot, e) { if(isCompareMode) return; if (e.target.closest('.lesson-card')) return; if (actionState.active) { if (actionState.type === 'move') performMoveToEmpty(day, slot); else alert("Ви в режимі Обміну. Клікніть на ІНШУ ПАРУ."); } else openNewModal(day, slot); }
+        function cancelAction() { 
+            actionState = { active: false, type: null, sourceId: null, sourceLesson: null }; 
+            document.body.classList.remove('mode-move', 'mode-swap'); 
+            
+            // Прибираємо підсвічування слотів
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('move-available', 'move-conflict');
+            });
+            
+            document.getElementById('action-panel').className = ''; 
+            renderLessons(); 
+        }
+        function handleSlotClick(day, slot, e) { 
+            if(isCompareMode) return; 
+            if (e.target.closest('.lesson-card')) return; 
+            
+            // Якщо режим дублювання - не обробляємо тут (обробляється в highlightSlotsForDuplication)
+            if (duplicateState.active) return;
+            
+            if (actionState.active) { 
+                if (actionState.type === 'move') performMoveToEmpty(day, slot); 
+                else alert("Ви в режимі Обміну. Клікніть на ІНШУ ПАРУ."); 
+            } else openNewModal(day, slot); 
+        }
 
         function checkConflicts() { document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('conflict')); document.querySelectorAll('.conflict-blinker').forEach(el => el.classList.remove('conflict-blinker')); if(isCompareMode) return; const activeLessons = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek)); const slotsMap = {}; activeLessons.forEach(l => { const k = `${l.day}-${l.slot}`; if (!slotsMap[k]) slotsMap[k] = []; slotsMap[k].push(l); }); for (const key in slotsMap) { const groupLessons = slotsMap[key]; if (groupLessons.length > 1) { for (let i = 0; i < groupLessons.length; i++) { for (let j = i + 1; j < groupLessons.length; j++) { const l1 = groupLessons[i]; const l2 = groupLessons[j]; const c1 = document.getElementById(l1.id); const c2 = document.getElementById(l2.id); if(!c1 || !c2) continue; let conflictFound = false; if (l1.room && l2.room && l1.room === l2.room) { conflictFound = true; c1.querySelector('.room-row')?.classList.add('conflict-blinker'); c2.querySelector('.room-row')?.classList.add('conflict-blinker'); } const t1 = [l1.teacher, l1.teacher2].filter(t => t); const t2 = [l2.teacher, l2.teacher2].filter(t => t); if (t1.some(t => t2.includes(t))) { conflictFound = true; c1.querySelector('.teacher-row')?.classList.add('conflict-blinker'); c2.querySelector('.teacher-row')?.classList.add('conflict-blinker'); } if (l1.group && l2.group) { const g1 = l1.group.split(',').map(s => s.trim()); const g2 = l2.group.split(',').map(s => s.trim()); if (g1.some(g => g2.includes(g))) { conflictFound = true; c1.querySelector('.group-badge')?.classList.add('conflict-blinker'); c2.querySelector('.group-badge')?.classList.add('conflict-blinker'); } } if (conflictFound) { c1.classList.add('conflict'); c2.classList.add('conflict'); } } } } } }
         function toggleMobileMenu(id, e) { e.stopPropagation(); const menu = document.getElementById(`menu-${id}`); document.querySelectorAll('.mobile-menu-dropdown').forEach(m => { if(m.id !== `menu-${id}`) m.classList.remove('show'); }); menu.classList.toggle('show'); }
@@ -990,6 +1175,169 @@
         function openEditModal(l) { editState = { isNew: false, lessonId: l.id }; document.getElementById('modalTitle').innerText = 'Редагування'; document.getElementById('inputGroup').value = l.group; document.getElementById('inputSubject').value = l.subject; document.getElementById('inputType').value = l.type; document.getElementById('inputTeacher').value = l.teacher; document.getElementById('inputTeacher2').value = l.teacher2; document.getElementById('inputNote').value = l.note; const sel = document.getElementById('inputRoomSelect'); if(Array.from(sel.options).some(o=>o.value===l.room)) { sel.value = l.room; document.getElementById('inputRoomNumber').value = ''; } else { sel.value = 'custom'; document.getElementById('inputRoomNumber').value = l.room; } toggleCustomRoom(); toggleTeacher2(); document.getElementById('addModal').classList.add('open'); }
         function saveLesson() { const g = document.getElementById('inputGroup').value, s = document.getElementById('inputSubject').value, t = document.getElementById('inputTeacher').value, t2 = document.getElementById('inputTeacher2').value, note = document.getElementById('inputNote').value, type = document.getElementById('inputType').value; let r = document.getElementById('inputRoomSelect').value; if(r==='custom') r = document.getElementById('inputRoomNumber').value; if(!s) { alert('Введіть назву'); return; } if(editState.isNew) lessons.push({ id: 'l'+Date.now(), week: currentWeek, day: editState.day, slot: editState.slot, group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); else { const i = lessons.findIndex(l => l.id === editState.lessonId); if(i>-1) Object.assign(lessons[i], { group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); } triggerAutoSave(); closeModal(); renderLessons(); checkConflicts(); }
         function deleteLesson(id, e) { e.stopPropagation(); if(confirm('Видалити?')) { lessons = lessons.filter(l=>l.id!==id); triggerAutoSave(); renderLessons(); checkConflicts(); } }
+        
+        let duplicateState = {
+            active: false,
+            sourceLesson: null,
+            targetWeek: 1  // За замовчуванням поточний тиждень
+        };
+        
+        function duplicateLesson(id, e) {
+            e.stopPropagation();
+            const lesson = lessons.find(l => l.id === id);
+            if (!lesson) return;
+            
+            // Зберігаємо дані для дублювання
+            duplicateState = {
+                active: true,
+                sourceLesson: { ...lesson },
+                targetWeek: currentWeek  // Спочатку показуємо поточний тиждень
+            };
+            
+            // Вмикаємо режим дублювання
+            document.body.classList.add('mode-duplicate');
+            
+            // Підсвічуємо всі слоти
+            highlightSlotsForDuplication(lesson);
+        }
+        
+        function highlightSlotsForDuplication(sourceLesson) {
+            // Спочатку прибираємо старе підсвічування
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('duplicate-available', 'duplicate-conflict');
+                slot.onclick = null;
+            });
+            
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                const day = parseInt(slot.dataset.day);
+                const slotNum = parseInt(slot.dataset.slot);
+                const week = duplicateState.targetWeek;
+                
+                // Перевіряємо конфлікти
+                const hasConflict = checkDuplicationConflict(sourceLesson, week, day, slotNum);
+                
+                if (hasConflict) {
+                    slot.classList.add('duplicate-conflict');
+                } else {
+                    slot.classList.add('duplicate-available');
+                }
+                
+                // Додаємо обробник кліку
+                slot.onclick = (e) => {
+                    if (!duplicateState.active) return;
+                    if (e.target.closest('.lesson-card') || e.target.closest('.add-btn-slot')) return;
+                    executeDuplicationToSlot(week, day, slotNum, hasConflict);
+                };
+            });
+        }
+        
+        function checkDuplicationConflict(sourceLesson, targetWeek, targetDay, targetSlot) {
+            // Конфлікт якщо:
+            // 1. Та ж група в той же час
+            // 2. Той же викладач в той же час
+            // 3. Та ж аудиторія в той же час (для лекцій)
+            
+            const conflicts = lessons.filter(l => 
+                l.week === targetWeek && 
+                l.day === targetDay && 
+                l.slot === targetSlot
+            );
+            
+            for (const existing of conflicts) {
+                // Перевірка групи
+                if (sourceLesson.group && existing.group === sourceLesson.group) {
+                    return { type: 'group', lesson: existing };
+                }
+                
+                // Перевірка викладача
+                if (sourceLesson.teacher && 
+                    (existing.teacher === sourceLesson.teacher || existing.teacher2 === sourceLesson.teacher)) {
+                    return { type: 'teacher', lesson: existing };
+                }
+                if (sourceLesson.teacher2 && 
+                    (existing.teacher === sourceLesson.teacher2 || existing.teacher2 === sourceLesson.teacher2)) {
+                    return { type: 'teacher', lesson: existing };
+                }
+                
+                // Перевірка аудиторії (тільки для лекцій)
+                if (sourceLesson.type === 'Лекція' && existing.type === 'Лекція' && 
+                    sourceLesson.room && existing.room === sourceLesson.room) {
+                    return { type: 'room', lesson: existing };
+                }
+            }
+            
+            return false;
+        }
+        
+        function executeDuplicationToSlot(targetWeek, targetDay, targetSlot, conflict) {
+            if (!duplicateState.active || !duplicateState.sourceLesson) return;
+            
+            // Якщо є конфлікт - попереджаємо
+            if (conflict) {
+                const conflictMessages = {
+                    'group': `⚠️ Конфлікт: Група ${conflict.lesson.group} вже має пару в цей час!\n\n${conflict.lesson.subject} (${conflict.lesson.teacher})\n\nВсе одно додати?`,
+                    'teacher': `⚠️ Конфлікт: Викладач ${conflict.lesson.teacher} вже зайнятий в цей час!\n\n${conflict.lesson.subject} (${conflict.lesson.group})\n\nВсе одно додати?`,
+                    'room': `⚠️ Конфлікт: Аудиторія ${conflict.lesson.room} вже зайнята в цей час!\n\n${conflict.lesson.subject} (${conflict.lesson.teacher})\n\nВсе одно додати?`
+                };
+                
+                if (!confirm(conflictMessages[conflict.type])) {
+                    return;
+                }
+            }
+            
+            // Створюємо нову пару
+            const newLesson = {
+                ...duplicateState.sourceLesson,
+                id: 'l' + Date.now() + Math.random(),
+                week: targetWeek,
+                day: targetDay,
+                slot: targetSlot
+            };
+            
+            lessons.push(newLesson);
+            triggerAutoSave();
+            renderLessons();
+            checkConflicts();
+            
+            // Вимикаємо режим дублювання
+            cancelDuplication();
+        }
+        
+        function cancelDuplication() {
+            duplicateState = { active: false, sourceLesson: null, targetWeek: 1 };
+            document.body.classList.remove('mode-duplicate');
+            
+            // Прибираємо підсвічування
+            document.querySelectorAll('.time-slot').forEach(slot => {
+                slot.classList.remove('duplicate-available', 'duplicate-conflict');
+                slot.onclick = null;
+            });
+        }
+        
+        function showNotification(message) {
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                z-index: 10000;
+                box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+                animation: slideIn 0.3s ease;
+            `;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            
+            setTimeout(() => {
+                notif.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notif.remove(), 300);
+            }, 3000);
+        }
+        
         function closeModal() { document.getElementById('addModal').classList.remove('open'); }
         function clearForm() { ['inputGroup','inputSubject','inputTeacher','inputTeacher2','inputNote','inputRoomNumber'].forEach(id=>document.getElementById(id).value=''); document.getElementById('inputRoomSelect').value=''; document.getElementById('inputType').value='Лекція'; toggleCustomRoom(); toggleTeacher2(); }
         function toggleCustomRoom() { document.getElementById('customRoomGroup').style.display = document.getElementById('inputRoomSelect').value === 'custom' ? 'block' : 'none'; }
@@ -1211,7 +1559,12 @@
                     
                     return `
                     <div class="stat-section">
-                        <div class="stat-title">📌 ${teacher} (${count} пар, ${(count * 1.5).toFixed(1)} год)</div>
+                        <div class="stat-title" style="display:flex;justify-content:space-between;align-items:center;">
+                            <span>📌 ${teacher} (${count} пар, ${(count * 1.5).toFixed(1)} год)</span>
+                            <button class="btn-sync" style="font-size:0.75rem;padding:4px 10px;" onclick="exportTeacherSchedule('${teacher}')">
+                                <i class="fa-solid fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
                         
                         <!-- Розподіл по днях -->
                         <div style="margin-bottom:1rem;">
@@ -1391,7 +1744,15 @@
         }
         
         function closeStats() { document.getElementById('statsModal').classList.remove('open'); }
-        document.addEventListener('keydown', e => { if(e.key==='Escape') { if(actionState.active) cancelAction(); else if(highlightState.active) clearHighlight(); else closeModal(); closeStats(); } });
+        document.addEventListener('keydown', e => { 
+            if(e.key==='Escape') { 
+                if(duplicateState.active) cancelDuplication(); 
+                else if(actionState.active) cancelAction(); 
+                else if(highlightState.active) clearHighlight(); 
+                else closeModal(); 
+                closeStats(); 
+            } 
+        });
 
         // --- ЛОГІКА ПЕРСОНАЛЬНИХ ПОСИЛАНЬ ---
         function checkUrlParams() {
@@ -1425,9 +1786,14 @@
                     
                     row.innerHTML = `
                         <span style="font-weight:600;">${name}</span>
-                        <button class="btn-sync" style="font-size:0.8rem;" onclick="copyLink('${link}')">
-                            <i class="fa-regular fa-copy"></i> Копіювати
-                        </button>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn-sync" style="font-size:0.8rem;" onclick="exportTeacherSchedule('${name}')">
+                                <i class="fa-solid fa-file-pdf"></i> PDF
+                            </button>
+                            <button class="btn-sync" style="font-size:0.8rem;" onclick="copyLink('${link}')">
+                                <i class="fa-regular fa-copy"></i> Посилання
+                            </button>
+                        </div>
                     `;
                     container.appendChild(row);
                 });
@@ -1442,27 +1808,504 @@
             });
         }
 
-        function openSearchModal() {
-            document.getElementById('searchTeacherInput').value = '';
-            document.getElementById('searchGroupInput').value = '';
-            document.getElementById('searchModal').classList.add('open');
-            document.getElementById('searchTeacherInput').focus();
+
+        // --- РОЗШИРЕНИЙ ПОШУК ---
+        let advancedSearchFilters = {};
+        
+        function toggleAdvancedSearch() {
+            // Перевіряємо чи є активні фільтри
+            const hasActiveFilters = Object.keys(advancedSearchFilters).length > 0 && 
+                                     Object.values(advancedSearchFilters).some(v => v !== '');
+            
+            if (hasActiveFilters) {
+                // Якщо фільтри активні - скидаємо їх
+                resetAdvancedSearch();
+                updateFilterButtonState(false);
+            } else {
+                // Якщо фільтрів немає - відкриваємо модальне вікно
+                openAdvancedSearch();
+            }
+        }
+        
+        function openAdvancedSearch() {
+            document.getElementById('advancedSearchModal').classList.add('open');
+        }
+        
+        function closeAdvancedSearch() {
+            document.getElementById('advancedSearchModal').classList.remove('open');
+        }
+        
+        function resetAdvancedSearch() {
+            document.getElementById('advSearchTeacher').value = '';
+            document.getElementById('advSearchGroup').value = '';
+            document.getElementById('advSearchSubject').value = '';
+            document.getElementById('advSearchType').value = '';
+            document.getElementById('advSearchRoom').value = '';
+            document.getElementById('advSearchDay').value = '';
+            advancedSearchFilters = {};
+            
+            // Приховуємо панель фільтрів
+            const panel = document.getElementById('filter-panel');
+            if (panel) panel.classList.remove('show');
+            
+            renderLessons();
+        }
+        
+        function updateFilterButtonState(isActive) {
+            const btnGuest = document.getElementById('filterBtnGuest');
+            const btnAdmin = document.getElementById('filterBtnAdmin');
+            
+            if (isActive) {
+                // Активний стан - жовта кнопка з іншою іконкою
+                if (btnGuest) {
+                    btnGuest.classList.add('btn-filter-active');
+                    btnGuest.innerHTML = '<i class="fa-solid fa-filter-circle-xmark"></i> Скинути';
+                    btnGuest.title = 'Скинути фільтри';
+                }
+                if (btnAdmin) {
+                    btnAdmin.classList.add('btn-filter-active');
+                    btnAdmin.innerHTML = '<i class="fa-solid fa-filter-circle-xmark"></i> Скинути';
+                    btnAdmin.title = 'Скинути фільтри';
+                }
+            } else {
+                // Неактивний стан - звичайна кнопка
+                if (btnGuest) {
+                    btnGuest.classList.remove('btn-filter-active');
+                    btnGuest.innerHTML = '<i class="fa-solid fa-filter"></i> Фільтри';
+                    btnGuest.title = 'Пошук та фільтри';
+                }
+                if (btnAdmin) {
+                    btnAdmin.classList.remove('btn-filter-active');
+                    btnAdmin.innerHTML = '<i class="fa-solid fa-filter"></i> Фільтри';
+                    btnAdmin.title = 'Пошук та фільтри';
+                }
+            }
+        }
+        
+        function applyAdvancedSearch() {
+            const filters = {
+                teacher: document.getElementById('advSearchTeacher').value.trim().toLowerCase(),
+                group: document.getElementById('advSearchGroup').value.trim().toLowerCase(),
+                subject: document.getElementById('advSearchSubject').value.trim().toLowerCase(),
+                type: document.getElementById('advSearchType').value,
+                room: document.getElementById('advSearchRoom').value.trim().toLowerCase(),
+                day: document.getElementById('advSearchDay').value
+            };
+            
+            // Перевіряємо чи хоч один фільтр заповнений
+            const hasFilters = Object.values(filters).some(v => v !== '');
+            
+            if (!hasFilters) {
+                alert('Оберіть хоча б один параметр для пошуку!');
+                return;
+            }
+            
+            advancedSearchFilters = filters;
+            renderLessons();
+            closeAdvancedSearch();
+            
+            // Оновлюємо стан кнопки
+            updateFilterButtonState(true);
+            
+            // Показуємо панель з активними фільтрами
+            showFilterPanel();
+        }
+        
+        function showFilterPanel() {
+            const panel = document.getElementById('filter-panel');
+            if (!panel) return;
+            
+            const activeFilters = [];
+            if (advancedSearchFilters.teacher) activeFilters.push(`Викладач: ${advancedSearchFilters.teacher}`);
+            if (advancedSearchFilters.group) activeFilters.push(`Група: ${advancedSearchFilters.group}`);
+            if (advancedSearchFilters.subject) activeFilters.push(`Предмет: ${advancedSearchFilters.subject}`);
+            if (advancedSearchFilters.type) activeFilters.push(`Тип: ${advancedSearchFilters.type}`);
+            if (advancedSearchFilters.room) activeFilters.push(`Аудиторія: ${advancedSearchFilters.room}`);
+            if (advancedSearchFilters.day) {
+                const days = ['', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт'];
+                activeFilters.push(`День: ${days[advancedSearchFilters.day]}`);
+            }
+            
+            panel.innerHTML = `
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <i class="fa-solid fa-filter"></i>
+                    <strong>Активні фільтри:</strong>
+                    ${activeFilters.join(' • ')}
+                    <button class="btn-sync" style="margin-left:auto;" onclick="resetAdvancedSearch(); updateFilterButtonState(false);">
+                        <i class="fa-solid fa-xmark"></i> Скинути
+                    </button>
+                </div>
+            `;
+            panel.classList.add('show');
+        }
+        
+        function matchesAdvancedFilters(lesson) {
+            if (Object.keys(advancedSearchFilters).length === 0) return true;
+            
+            const filters = advancedSearchFilters;
+            
+            if (filters.teacher) {
+                const teacherMatch = (lesson.teacher && lesson.teacher.toLowerCase().includes(filters.teacher)) ||
+                                   (lesson.teacher2 && lesson.teacher2.toLowerCase().includes(filters.teacher));
+                if (!teacherMatch) return false;
+            }
+            
+            if (filters.group && (!lesson.group || !lesson.group.toLowerCase().includes(filters.group))) {
+                return false;
+            }
+            
+            if (filters.subject && (!lesson.subject || !lesson.subject.toLowerCase().includes(filters.subject))) {
+                return false;
+            }
+            
+            if (filters.type && lesson.type !== filters.type) {
+                return false;
+            }
+            
+            if (filters.room && (!lesson.room || !lesson.room.toLowerCase().includes(filters.room))) {
+                return false;
+            }
+            
+            if (filters.day && lesson.day !== parseInt(filters.day)) {
+                return false;
+            }
+            
+            return true;
         }
 
-        function applySearch(type) {
-            let val = '';
-            if (type === 'teacher') {
-                val = document.getElementById('searchTeacherInput').value;
-            } else {
-                val = document.getElementById('searchGroupInput').value;
+        // --- ЕКСПОРТ PDF ДЛЯ ВИКЛАДАЧІВ ---
+        function exportTeacherSchedule(teacherName) {
+            if (!teacherName) {
+                teacherName = prompt('Введіть прізвище викладача:');
+                if (!teacherName) return;
             }
-
-            if (val) {
-                activateHighlight(type, val, { stopPropagation: ()=>{} });
-                document.getElementById('searchModal').classList.remove('open');
-            } else {
-                alert("Введіть значення!");
+            
+            // Збираємо всі пари викладача
+            const teacherLessons = lessons.filter(l => 
+                l.teacher === teacherName || l.teacher2 === teacherName
+            ).sort((a, b) => {
+                if (a.week !== b.week) return a.week - b.week;
+                if (a.day !== b.day) return a.day - b.day;
+                return a.slot - b.slot;
+            });
+            
+            if (teacherLessons.length === 0) {
+                alert('Пар для цього викладача не знайдено!');
+                return;
             }
+            
+            // Створюємо HTML для експорту
+            const html = generateTeacherScheduleHTML(teacherName, teacherLessons);
+            
+            // Відкриваємо у новому вікні для друку
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(html);
+            printWindow.document.close();
+            
+            // Автоматично відкриваємо діалог друку
+            setTimeout(() => {
+                printWindow.print();
+            }, 500);
+        }
+        
+        function generateTeacherScheduleHTML(teacherName, teacherLessons) {
+            const week1 = teacherLessons.filter(l => l.week === 1);
+            const week2 = teacherLessons.filter(l => l.week === 2);
+            
+            const dayNames = ['', 'Понеділок', 'Вівторок', 'Середа', 'Четвер', "П'ятниця"];
+            
+            const generateWeekTable = (lessons, weekNum) => {
+                const grouped = {};
+                lessons.forEach(l => {
+                    const key = `${l.day}-${l.slot}`;
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(l);
+                });
+                
+                let rows = '';
+                [1,2,3,4,5].forEach(day => {
+                    [1,2,3,4,5].forEach(slot => {
+                        const key = `${day}-${slot}`;
+                        const lessonsInSlot = grouped[key] || [];
+                        const timeSlot = TIME_SLOTS[day][slot - 1];
+                        
+                        if (lessonsInSlot.length > 0) {
+                            lessonsInSlot.forEach(lesson => {
+                                rows += `
+                                    <tr>
+                                        <td>${dayNames[day]}</td>
+                                        <td style="text-align:center;">${slot}</td>
+                                        <td style="text-align:center;">${timeSlot.time}</td>
+                                        <td><strong>${lesson.subject}</strong></td>
+                                        <td style="text-align:center;">${lesson.type}</td>
+                                        <td style="text-align:center;">${lesson.group || '-'}</td>
+                                        <td style="text-align:center;">${lesson.room || '-'}</td>
+                                    </tr>
+                                `;
+                            });
+                        }
+                    });
+                });
+                
+                return rows || '<tr><td colspan="7" style="text-align:center;color:#999;padding:30px;">Немає пар на цьому тижні</td></tr>';
+            };
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Розклад - ${teacherName}</title>
+                    <style>
+                        @page {
+                            margin: 2cm 1.5cm;
+                        }
+                        
+                        body { 
+                            font-family: 'Segoe UI', 'Arial', sans-serif; 
+                            margin: 0;
+                            padding: 0;
+                            font-size: 11pt;
+                            line-height: 1.4;
+                        }
+                        
+                        /* Верхній колонтитул */
+                        .page-header {
+                            border-bottom: 2px solid #3b82f6;
+                            padding-bottom: 12px;
+                            margin-bottom: 25px;
+                        }
+                        
+                        .header-title {
+                            font-size: 18pt;
+                            font-weight: 700;
+                            color: #0f172a;
+                            margin: 0 0 8px 0;
+                        }
+                        
+                        .header-info {
+                            display: grid;
+                            grid-template-columns: auto 1fr;
+                            gap: 8px;
+                            font-size: 10pt;
+                            color: #475569;
+                        }
+                        
+                        .header-label {
+                            font-weight: 600;
+                            color: #1e293b;
+                        }
+                        
+                        /* Заголовок тижня */
+                        .week-title {
+                            font-size: 14pt;
+                            font-weight: 700;
+                            color: #1e40af;
+                            margin: 0 0 15px 0;
+                            padding: 8px 12px;
+                            background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+                            border-left: 4px solid #3b82f6;
+                            border-radius: 4px;
+                        }
+                        
+                        /* Таблиця */
+                        table { 
+                            width: 100%; 
+                            border-collapse: collapse; 
+                            margin-bottom: 20px;
+                            font-size: 10pt;
+                        }
+                        
+                        /* Світла шапка таблиці */
+                        th { 
+                            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+                            color: white; 
+                            padding: 10px 8px;
+                            text-align: left;
+                            font-weight: 600;
+                            border: 1px solid #2563eb;
+                            font-size: 9.5pt;
+                        }
+                        
+                        td { 
+                            padding: 8px;
+                            border: 1px solid #cbd5e1;
+                            vertical-align: top;
+                        }
+                        
+                        tr:nth-child(even) { 
+                            background: #f8fafc; 
+                        }
+                        
+                        tr:hover {
+                            background: #e0f2fe;
+                        }
+                        
+                        /* Підсумки */
+                        .summary {
+                            margin-top: 15px;
+                            padding: 12px 15px;
+                            background: #f1f5f9;
+                            border-radius: 6px;
+                            border-left: 4px solid #64748b;
+                            font-size: 10pt;
+                            color: #334155;
+                            display: flex;
+                            gap: 20px;
+                            align-items: center;
+                        }
+                        
+                        .summary-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                        }
+                        
+                        .summary-value {
+                            font-weight: 700;
+                            color: #0f172a;
+                            font-size: 12pt;
+                        }
+                        
+                        /* Кнопка друку */
+                        .print-btn { 
+                            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                            color: white; 
+                            padding: 12px 24px;
+                            border: none; 
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 14pt;
+                            font-weight: 600;
+                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                            margin-bottom: 20px;
+                            transition: all 0.2s;
+                        }
+                        
+                        .print-btn:hover {
+                            transform: translateY(-2px);
+                            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                        }
+                        
+                        /* Для друку */
+                        @media print {
+                            .no-print { 
+                                display: none; 
+                            }
+                            
+                            /* Кожен тиждень на окремій сторінці */
+                            .page-break {
+                                page-break-before: always;
+                            }
+                            
+                            body {
+                                font-size: 10pt;
+                            }
+                            
+                            table {
+                                page-break-inside: auto;
+                            }
+                            
+                            tr {
+                                page-break-inside: avoid;
+                                page-break-after: auto;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <button class="print-btn no-print" onclick="window.print()">🖨️ Друкувати / Зберегти PDF</button>
+                    
+                    <!-- Верхній колонтитул з інформацією -->
+                    <div class="page-header">
+                        <div class="header-title">📅 Розклад занять</div>
+                        <div class="header-info">
+                            <span class="header-label">Викладач:</span>
+                            <span>${teacherName}</span>
+                            <span class="header-label">Кафедра:</span>
+                            <span>Менеджменту ІТ-сфери</span>
+                            <span class="header-label">Дата:</span>
+                            <span>${new Date().toLocaleDateString('uk-UA', {year: 'numeric', month: 'long', day: 'numeric'})}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Тиждень I -->
+                    <div class="week-title">Тиждень I (чисельник)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">День</th>
+                                <th style="width: 7%; text-align: center;">Пара</th>
+                                <th style="width: 12%; text-align: center;">Час</th>
+                                <th style="width: 30%;">Дисципліна</th>
+                                <th style="width: 12%; text-align: center;">Тип</th>
+                                <th style="width: 12%; text-align: center;">Група</th>
+                                <th style="width: 15%; text-align: center;">Аудиторія</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${generateWeekTable(week1, 1)}
+                        </tbody>
+                    </table>
+                    
+                    <div class="summary">
+                        <div class="summary-item">
+                            <span>Всього пар:</span>
+                            <span class="summary-value">${week1.length}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Тиждень II на новій сторінці -->
+                    <div class="page-break"></div>
+                    
+                    <!-- Повторюємо заголовок для другої сторінки -->
+                    <div class="page-header">
+                        <div class="header-title">📅 Розклад занять</div>
+                        <div class="header-info">
+                            <span class="header-label">Викладач:</span>
+                            <span>${teacherName}</span>
+                            <span class="header-label">Кафедра:</span>
+                            <span>Менеджменту ІТ-сфери</span>
+                            <span class="header-label">Дата:</span>
+                            <span>${new Date().toLocaleDateString('uk-UA', {year: 'numeric', month: 'long', day: 'numeric'})}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="week-title">Тиждень II (знаменник)</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">День</th>
+                                <th style="width: 7%; text-align: center;">Пара</th>
+                                <th style="width: 12%; text-align: center;">Час</th>
+                                <th style="width: 30%;">Дисципліна</th>
+                                <th style="width: 12%; text-align: center;">Тип</th>
+                                <th style="width: 12%; text-align: center;">Група</th>
+                                <th style="width: 15%; text-align: center;">Аудиторія</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${generateWeekTable(week2, 2)}
+                        </tbody>
+                    </table>
+                    
+                    <div class="summary">
+                        <div class="summary-item">
+                            <span>Всього пар:</span>
+                            <span class="summary-value">${week2.length}</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Загальна статистика внизу другої сторінки -->
+                    <div class="summary" style="margin-top: 30px; border-left-color: #3b82f6;">
+                        <div class="summary-item">
+                            <span>📊 Загалом за два тижні:</span>
+                            <span class="summary-value">${teacherLessons.length} пар</span>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
         }
 
         init();
