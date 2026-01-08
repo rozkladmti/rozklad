@@ -55,6 +55,7 @@
         
         .btn-sync { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap; }
         .btn-sync:hover { background: #e2e8f0; transform: translateY(-1px); }
+        .btn-sync:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
         .btn-primary { background: var(--univ-blue); color: white; border-color: var(--univ-blue); }
         .btn-primary:hover { background: #1e293b; }
         .btn-manual-save { border-color: #bbf7d0; color: #166534; }
@@ -456,6 +457,15 @@
         <!-- Другий рядок: Кнопки управління -->
         <div class="top-bar-row second">
             <div class="controls-right">
+                <!-- Кнопки Undo/Redo -->
+                <button class="btn-sync" id="undoBtn" onclick="undo()" title="Скасувати останню дію" disabled>
+                    <i class="fa-solid fa-rotate-left"></i> <span id="undoCount"></span>
+                </button>
+                <button class="btn-sync" id="redoBtn" onclick="redo()" title="Повторити дію" disabled>
+                    <i class="fa-solid fa-rotate-right"></i> <span id="redoCount"></span>
+                </button>
+                <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 4px;"></div>
+                
                 <div class="guest-controls">
                     <button class="btn-sync" id="filterBtnGuest" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
                     <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
@@ -667,6 +677,115 @@
         let autoSaveTimer = null;
         let unsavedChanges = false;
 
+        // Система Undo/Redo - окрема історія для Гостя та Адміна
+        let guestHistory = [];
+        let adminHistory = [];
+        let guestHistoryIndex = -1;
+        let adminHistoryIndex = -1;
+        const MAX_HISTORY = 20;
+
+        function getHistory() {
+            return isAdmin ? adminHistory : guestHistory;
+        }
+
+        function getHistoryIndex() {
+            return isAdmin ? adminHistoryIndex : guestHistoryIndex;
+        }
+
+        function setHistoryIndex(value) {
+            if (isAdmin) {
+                adminHistoryIndex = value;
+            } else {
+                guestHistoryIndex = value;
+            }
+        }
+
+        function saveState() {
+            // Зберігаємо стан тільки якщо не в режимі порівняння
+            if (isCompareMode) return;
+            
+            let history = getHistory();
+            let historyIndex = getHistoryIndex();
+            
+            // Видаляємо всі стани після поточної позиції (якщо робимо нову дію після undo)
+            if (historyIndex < history.length - 1) {
+                history = history.slice(0, historyIndex + 1);
+            }
+            
+            // Додаємо новий стан
+            history.push(JSON.parse(JSON.stringify(lessons)));
+            
+            // Обмежуємо розмір історії
+            if (history.length > MAX_HISTORY) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+            
+            // Зберігаємо оновлену історію
+            if (isAdmin) {
+                adminHistory = history;
+                adminHistoryIndex = historyIndex;
+            } else {
+                guestHistory = history;
+                guestHistoryIndex = historyIndex;
+            }
+            
+            updateUndoRedoButtons();
+        }
+
+        function undo() {
+            let historyIndex = getHistoryIndex();
+            if (historyIndex <= 0) return;
+            
+            historyIndex--;
+            setHistoryIndex(historyIndex);
+            
+            const history = getHistory();
+            lessons = JSON.parse(JSON.stringify(history[historyIndex]));
+            
+            renderLessons();
+            checkConflicts();
+            updateUndoRedoButtons();
+            triggerAutoSave();
+        }
+
+        function redo() {
+            const history = getHistory();
+            let historyIndex = getHistoryIndex();
+            
+            if (historyIndex >= history.length - 1) return;
+            
+            historyIndex++;
+            setHistoryIndex(historyIndex);
+            
+            lessons = JSON.parse(JSON.stringify(history[historyIndex]));
+            
+            renderLessons();
+            checkConflicts();
+            updateUndoRedoButtons();
+            triggerAutoSave();
+        }
+
+        function updateUndoRedoButtons() {
+            const undoBtn = document.getElementById('undoBtn');
+            const redoBtn = document.getElementById('redoBtn');
+            const undoCount = document.getElementById('undoCount');
+            const redoCount = document.getElementById('redoCount');
+            
+            const history = getHistory();
+            const historyIndex = getHistoryIndex();
+            
+            const canUndo = historyIndex > 0;
+            const canRedo = historyIndex < history.length - 1;
+            
+            undoBtn.disabled = !canUndo;
+            redoBtn.disabled = !canRedo;
+            
+            undoCount.textContent = canUndo ? `(${historyIndex})` : '';
+            redoCount.textContent = canRedo ? `(${history.length - historyIndex - 1})` : '';
+        }
+
         function init() {
             if(localStorage.getItem('isAdmin') === 'true') setAdminMode(true);
             loadFromLocal();
@@ -679,6 +798,9 @@
             window.addEventListener('beforeunload', function (e) { if (unsavedChanges) { e.preventDefault(); e.returnValue = ''; } });
             document.addEventListener('dragend', () => { document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('drag-over')); });
             fixTooltips();
+            
+            // Ініціалізуємо історію з поточним станом
+            saveState();
         }
 
         function fixTooltips() {
@@ -739,6 +861,9 @@
             badge.className = val ? 'status-badge st-admin' : 'status-badge st-guest';
             badge.innerHTML = val ? '<i class="fa-solid fa-user-shield"></i> Адмін' : '<i class="fa-solid fa-user"></i> Гість';
             updateDraftAlert();
+            
+            // Оновлюємо кнопки Undo/Redo для нового режиму
+            updateUndoRedoButtons();
         }
         
         function checkRealDifferences() {
@@ -1110,7 +1235,7 @@
         function handleDragStart(e) { if(actionState.active || isCompareMode) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', this.id); actionState.type='move'; }
         function handleDragOver(e) { e.preventDefault(); if(!actionState.active && !isCompareMode) this.classList.add('drag-over'); }
         function handleDragLeave(e) { this.classList.remove('drag-over'); }
-        function handleDrop(e) { e.preventDefault(); this.classList.remove('drag-over'); if(isCompareMode) return; const id = e.dataTransfer.getData('text/plain'); const slotEl = e.target.closest('.time-slot'); if(id && slotEl) { const idx = lessons.findIndex(l => l.id === id); if(idx > -1) { lessons[idx].day = parseInt(slotEl.dataset.day); lessons[idx].slot = parseInt(slotEl.dataset.slot); lessons[idx].week = parseInt(currentWeek); finalizeAction(); } } }
+        function handleDrop(e) { e.preventDefault(); this.classList.remove('drag-over'); if(isCompareMode) return; const id = e.dataTransfer.getData('text/plain'); const slotEl = e.target.closest('.time-slot'); if(id && slotEl) { const idx = lessons.findIndex(l => l.id === id); if(idx > -1) { saveState(); lessons[idx].day = parseInt(slotEl.dataset.day); lessons[idx].slot = parseInt(slotEl.dataset.slot); lessons[idx].week = parseInt(currentWeek); finalizeAction(); } } }
         function startMove(id, title, e) { 
             e.stopPropagation(); 
             clearHighlight(); 
@@ -1168,6 +1293,9 @@
                 }
             }
             
+            // Зберігаємо стан перед переміщенням
+            saveState();
+            
             // Переміщуємо
             lessons[idx].day = day; 
             lessons[idx].slot = slot; 
@@ -1180,7 +1308,8 @@
             if (actionState.sourceId === tId) return; 
             const sIdx = lessons.findIndex(l => l.id === actionState.sourceId); 
             const tIdx = lessons.findIndex(l => l.id === tId); 
-            if (sIdx > -1 && tIdx > -1) { 
+            if (sIdx > -1 && tIdx > -1) {
+                saveState();
                 const tmp = { d: lessons[sIdx].day, s: lessons[sIdx].slot, w: lessons[sIdx].week }; 
                 lessons[sIdx].day = lessons[tIdx].day; lessons[sIdx].slot = lessons[tIdx].slot; lessons[sIdx].week = lessons[tIdx].week; 
                 lessons[tIdx].day = tmp.d; lessons[tIdx].slot = tmp.s; lessons[tIdx].week = tmp.w; 
@@ -1228,8 +1357,8 @@
         function uploadBackup(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); lessons = sanitizeData(data.lessons); saveToLocal(); renderLessons(); } catch (err) { alert('Error'); } }; reader.readAsText(file); }
         function openNewModal(d, s) { editState = { isNew: true, lessonId: null, day: d, slot: s }; clearForm(); document.getElementById('modalTitle').innerText = 'Нова пара'; document.getElementById('addModal').classList.add('open'); document.getElementById('inputGroup').focus(); }
         function openEditModal(l) { editState = { isNew: false, lessonId: l.id }; document.getElementById('modalTitle').innerText = 'Редагування'; document.getElementById('inputGroup').value = l.group; document.getElementById('inputSubject').value = l.subject; document.getElementById('inputType').value = l.type; document.getElementById('inputTeacher').value = l.teacher; document.getElementById('inputTeacher2').value = l.teacher2; document.getElementById('inputNote').value = l.note; const sel = document.getElementById('inputRoomSelect'); if(Array.from(sel.options).some(o=>o.value===l.room)) { sel.value = l.room; document.getElementById('inputRoomNumber').value = ''; } else { sel.value = 'custom'; document.getElementById('inputRoomNumber').value = l.room; } toggleCustomRoom(); toggleTeacher2(); document.getElementById('addModal').classList.add('open'); }
-        function saveLesson() { const g = document.getElementById('inputGroup').value, s = document.getElementById('inputSubject').value, t = document.getElementById('inputTeacher').value, t2 = document.getElementById('inputTeacher2').value, note = document.getElementById('inputNote').value, type = document.getElementById('inputType').value; let r = document.getElementById('inputRoomSelect').value; if(r==='custom') r = document.getElementById('inputRoomNumber').value; if(!s) { alert('Введіть назву'); return; } if(editState.isNew) lessons.push({ id: 'l'+Date.now(), week: currentWeek, day: editState.day, slot: editState.slot, group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); else { const i = lessons.findIndex(l => l.id === editState.lessonId); if(i>-1) Object.assign(lessons[i], { group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); } triggerAutoSave(); closeModal(); renderLessons(); checkConflicts(); }
-        function deleteLesson(id, e) { e.stopPropagation(); if(confirm('Видалити?')) { lessons = lessons.filter(l=>l.id!==id); triggerAutoSave(); renderLessons(); checkConflicts(); } }
+        function saveLesson() { const g = document.getElementById('inputGroup').value, s = document.getElementById('inputSubject').value, t = document.getElementById('inputTeacher').value, t2 = document.getElementById('inputTeacher2').value, note = document.getElementById('inputNote').value, type = document.getElementById('inputType').value; let r = document.getElementById('inputRoomSelect').value; if(r==='custom') r = document.getElementById('inputRoomNumber').value; if(!s) { alert('Введіть назву'); return; } saveState(); if(editState.isNew) lessons.push({ id: 'l'+Date.now(), week: currentWeek, day: editState.day, slot: editState.slot, group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); else { const i = lessons.findIndex(l => l.id === editState.lessonId); if(i>-1) Object.assign(lessons[i], { group: g, subject: s, teacher: t, teacher2: t2, type, room: r, note }); } triggerAutoSave(); closeModal(); renderLessons(); checkConflicts(); }
+        function deleteLesson(id, e) { e.stopPropagation(); if(confirm('Видалити?')) { saveState(); lessons = lessons.filter(l=>l.id!==id); triggerAutoSave(); renderLessons(); checkConflicts(); } }
         
         let duplicateState = {
             active: false,
@@ -1339,6 +1468,9 @@
                     return;
                 }
             }
+            
+            // Зберігаємо стан перед дублюванням
+            saveState();
             
             // Створюємо нову пару
             const newLesson = {
