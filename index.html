@@ -183,6 +183,59 @@
         .stat-bar { height: 100%; border-radius: 4px; }
         .stat-value { width: 10%; text-align: right; font-weight: 700; color: #0f172a; }
         .bar-blue { background: #3b82f6; } .bar-green { background: #10b981; } .bar-orange { background: #f59e0b; } .bar-red { background: #ef4444; } .bar-purple { background: #8b5cf6; } .bar-gray { background: #cbd5e1; }
+        
+        /* Таби для статистики */
+        .stats-tabs { display: flex; gap: 8px; margin-bottom: 1rem; border-bottom: 2px solid #e2e8f0; }
+        .stats-tab { padding: 8px 16px; font-size: 0.85rem; font-weight: 600; color: #64748b; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+        .stats-tab:hover { color: #334155; }
+        .stats-tab.active { color: var(--univ-blue); border-bottom-color: var(--univ-blue); }
+        .stats-tab-content { display: none; }
+        .stats-tab-content.active { display: block; }
+        
+        /* Картки для швидкої статистики */
+        .stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
+        .stat-card { background: #f8fafc; border-radius: 8px; padding: 0.75rem; text-align: center; border: 1px solid #e2e8f0; }
+        .stat-card-value { font-size: 1.5rem; font-weight: 800; color: var(--univ-blue); }
+        .stat-card-label { font-size: 0.75rem; color: #64748b; margin-top: 4px; font-weight: 500; }
+        
+        /* Теплова карта */
+        .heatmap { display: grid; grid-template-columns: 60px repeat(5, 1fr); gap: 4px; font-size: 0.75rem; }
+        .heatmap-cell { background: #f1f5f9; padding: 8px 4px; text-align: center; border-radius: 4px; font-weight: 600; }
+        .heatmap-header { background: var(--univ-blue); color: white; }
+        .heatmap-time { background: #e2e8f0; color: #475569; font-size: 0.7rem; }
+        .heatmap-data { cursor: pointer; transition: transform 0.2s; }
+        .heatmap-data:hover { transform: scale(1.05); }
+        .heat-0 { background: #f1f5f9; color: #94a3b8; }
+        .heat-1 { background: #dbeafe; color: #1e40af; }
+        .heat-2 { background: #93c5fd; color: #1e3a8a; }
+        .heat-3 { background: #3b82f6; color: white; }
+        .heat-4 { background: #1d4ed8; color: white; }
+        .heat-5 { background: #1e3a8a; color: white; }
+        
+        /* Кругова діаграма */
+        .pie-chart { width: 120px; height: 120px; border-radius: 50%; margin: 0 auto; position: relative; }
+        .pie-legend { display: flex; flex-direction: column; gap: 6px; margin-top: 1rem; }
+        .pie-legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+        .pie-legend-color { width: 16px; height: 16px; border-radius: 3px; }
+        
+        /* Список з іконками */
+        .stat-list { display: flex; flex-direction: column; gap: 8px; }
+        .stat-list-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: #f8fafc; border-radius: 6px; font-size: 0.85rem; }
+        .stat-list-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: #e2e8f0; border-radius: 50%; font-size: 0.7rem; color: #475569; flex-shrink: 0; }
+        .stat-list-text { flex: 1; color: #334155; font-weight: 500; }
+        .stat-list-value { font-weight: 700; color: var(--univ-blue); }
+        
+        /* Порожні слоти */
+        .empty-slots { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .empty-slot-day { background: #f8fafc; border-radius: 8px; padding: 10px; border: 1px solid #e2e8f0; }
+        .empty-slot-day-name { font-weight: 700; font-size: 0.8rem; color: var(--univ-blue); margin-bottom: 8px; text-align: center; }
+        .empty-slot-list { display: flex; flex-direction: column; gap: 4px; }
+        .empty-slot-item { background: white; padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; text-align: center; color: #64748b; border: 1px dashed #cbd5e1; }
+        
+        /* Конфлікти */
+        .conflict-item { background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+        .conflict-header { font-weight: 700; color: #dc2626; font-size: 0.85rem; margin-bottom: 6px; }
+        .conflict-details { font-size: 0.75rem; color: #7f1d1d; line-height: 1.4; }
 
         /* ОНОВЛЕНИЙ БЛОК ДЛЯ МОБІЛЬНИХ */
         @media (max-width: 768px) {
@@ -199,6 +252,14 @@
             .card-actions { display: none !important; }
             .mobile-actions { display: block; position: absolute; top: 4px; right: 4px; }
             .card-top-row { padding-right: 25px; }
+            
+            /* Адаптивність статистики */
+            .stat-cards { grid-template-columns: repeat(2, 1fr); }
+            .empty-slots { grid-template-columns: 1fr; }
+            .heatmap { grid-template-columns: 50px repeat(5, 1fr); font-size: 0.65rem; }
+            .heatmap-cell { padding: 6px 2px; }
+            .stats-tabs { overflow-x: auto; }
+            .stats-tab { font-size: 0.8rem; padding: 6px 12px; white-space: nowrap; }
         }
         
         /* Гарні підказки замість стандартних */
@@ -354,7 +415,23 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="statsModal"><div class="modal-box" style="width: 500px;"><div class="modal-header">Статистика (Тиждень <span id="statsWeekNum"></span>)</div><div class="stats-container" id="statsContent"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="closeStats()">Закрити</button></div></div></div>
+    <div class="modal-overlay" id="statsModal">
+        <div class="modal-box" style="width: 700px; max-width: 90vw;">
+            <div class="modal-header">Статистика (Тиждень <span id="statsWeekNum"></span>)</div>
+            
+            <div class="stats-tabs">
+                <button class="stats-tab active" onclick="switchStatsTab('general')">Загальне</button>
+                <button class="stats-tab" onclick="switchStatsTab('teachers')">Викладачі</button>
+                <button class="stats-tab" onclick="switchStatsTab('rooms')">Аудиторії</button>
+            </div>
+            
+            <div class="stats-container" id="statsContent"></div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeStats()">Закрити</button>
+            </div>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="searchModal">
         <div class="modal-box" style="width: 350px;">
@@ -399,13 +476,44 @@
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyr9sUjBPCI3HyfEk9G3jrybFMFUNAJwOzXx_92xtD-E-tL9J0j9vhAHvFAguyV8sZsPQ/exec';
         const ADMIN_PASSWORD = 'admin';
 
-        const TIME_SLOTS = [
-            { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
-            { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
-            { id: 3, num: 3, time: "12:10 - 13:30", start: 12*60+10, end: 13*60+30 }, 
-            { id: 4, num: 4, time: "13:45 - 15:05", start: 13*60+45, end: 15*60+5 },
-            { id: 5, num: 5, time: "15:20 - 16:40", start: 15*60+20, end: 16*60+40 }
-        ];
+        // Різні часові слоти для різних днів тижня (1=Пн, 2=Вт, 3=Ср, 4=Чт, 5=Пт)
+        const TIME_SLOTS = {
+            1: [ // Понеділок
+                { id: 1, num: 1, time: "10:00 - 11:20", start: 10*60, end: 11*60+20 }, 
+                { id: 2, num: 2, time: "11:35 - 12:55", start: 11*60+35, end: 12*60+55 },
+                { id: 3, num: 3, time: "13:35 - 14:55", start: 13*60+35, end: 14*60+55 }, 
+                { id: 4, num: 4, time: "15:10 - 16:30", start: 15*60+10, end: 16*60+30 },
+                { id: 5, num: 5, time: "16:45 - 18:05", start: 16*60+45, end: 18*60+5 }
+            ],
+            2: [ // Вівторок
+                { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
+                { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
+                { id: 3, num: 3, time: "12:35 - 13:55", start: 12*60+35, end: 13*60+55 }, 
+                { id: 4, num: 4, time: "14:10 - 15:30", start: 14*60+10, end: 15*60+30 },
+                { id: 5, num: 5, time: "15:45 - 17:05", start: 15*60+45, end: 17*60+5 }
+            ],
+            3: [ // Середа
+                { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
+                { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
+                { id: 3, num: 3, time: "12:35 - 13:55", start: 12*60+35, end: 13*60+55 }, 
+                { id: 4, num: 4, time: "14:10 - 15:30", start: 14*60+10, end: 15*60+30 },
+                { id: 5, num: 5, time: "15:45 - 17:05", start: 15*60+45, end: 17*60+5 }
+            ],
+            4: [ // Четвер
+                { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
+                { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
+                { id: 3, num: 3, time: "12:35 - 13:55", start: 12*60+35, end: 13*60+55 }, 
+                { id: 4, num: 4, time: "14:10 - 15:30", start: 14*60+10, end: 15*60+30 },
+                { id: 5, num: 5, time: "15:45 - 17:05", start: 15*60+45, end: 17*60+5 }
+            ],
+            5: [ // П'ятниця
+                { id: 1, num: 1, time: "09:00 - 10:20", start: 9*60, end: 10*60+20 }, 
+                { id: 2, num: 2, time: "10:35 - 11:55", start: 10*60+35, end: 11*60+55 },
+                { id: 3, num: 3, time: "12:10 - 13:30", start: 12*60+10, end: 13*60+30 }, 
+                { id: 4, num: 4, time: "13:45 - 15:05", start: 13*60+45, end: 15*60+5 },
+                { id: 5, num: 5, time: "15:20 - 16:40", start: 15*60+20, end: 16*60+40 }
+            ]
+        };
 
         let currentWeek = 1;
         let liveLessons = [];
@@ -830,7 +938,7 @@
             checkConflicts(); 
             if(highlightState.active) reapplyHighlight(); 
         }
-        function renderGrid() { const days = [1, 2, 3, 4, 5]; days.forEach(day => { const col = document.getElementById(`day-${day}`); const header = col.querySelector('.day-header'); col.innerHTML = ''; col.appendChild(header); TIME_SLOTS.forEach(slot => { const d = document.createElement('div'); d.className = 'time-slot'; d.dataset.day = day; d.dataset.slot = slot.id; d.innerHTML = `<div class="slot-header-row"><div class="slot-number-badge">${slot.num}</div><div class="time-text">${slot.time}</div></div><div class="add-btn-slot">+</div>`; d.addEventListener('dragover', handleDragOver); d.addEventListener('drop', handleDrop); d.addEventListener('click', (e) => handleSlotClick(day, slot.id, e)); col.appendChild(d); }); }); }
+        function renderGrid() { const days = [1, 2, 3, 4, 5]; days.forEach(day => { const col = document.getElementById(`day-${day}`); const header = col.querySelector('.day-header'); col.innerHTML = ''; col.appendChild(header); TIME_SLOTS[day].forEach(slot => { const d = document.createElement('div'); d.className = 'time-slot'; d.dataset.day = day; d.dataset.slot = slot.id; d.innerHTML = `<div class="slot-header-row"><div class="slot-number-badge">${slot.num}</div><div class="time-text">${slot.time}</div></div><div class="add-btn-slot">+</div>`; d.addEventListener('dragover', handleDragOver); d.addEventListener('drop', handleDrop); d.addEventListener('click', (e) => handleSlotClick(day, slot.id, e)); col.appendChild(d); }); }); }
         
         function handleDragStart(e) { if(actionState.active || isCompareMode) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', this.id); actionState.type='move'; }
         function handleDragOver(e) { e.preventDefault(); if(!actionState.active && !isCompareMode) this.classList.add('drag-over'); }
@@ -874,7 +982,7 @@
         function reapplyHighlight() { document.querySelectorAll('.lesson-card').forEach(c => { c.classList.remove('highlighted'); let match = false; if(highlightState.type === 'group' && c.dataset.group && c.dataset.group.includes(highlightState.value)) match = true; if(highlightState.type === 'teacher' && (c.dataset.teacher === highlightState.value || c.dataset.teacher2 === highlightState.value)) match = true; if(match) c.classList.add('highlighted'); }); }
         function clearHighlight() { highlightState.active = false; document.body.classList.remove('spotlight-active'); document.getElementById('filter-panel').classList.remove('show'); document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('highlighted')); }
         function handleBodyClick(e) { if(!e.target.closest('.mobile-actions')) closeAllMobileMenus(); if(highlightState.active && !e.target.closest('.lesson-card') && !e.target.closest('.top-bar') && !e.target.closest('.modal-box')) clearHighlight(); }
-        function updateLiveStatus() { const now = new Date(); const d = now.getDay(); const m = now.getHours()*60 + now.getMinutes(); document.querySelectorAll('.time-slot.drag-over').forEach(el => el.classList.remove('drag-over')); document.querySelectorAll('.day-column').forEach(c => c.classList.remove('current-day')); if(d>=1 && d<=5) document.getElementById(`day-${d}`).classList.add('current-day'); document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('current-now')); if(d>=1 && d<=5) { const slot = TIME_SLOTS.find(s => m >= s.start && m <= s.end); if(slot) document.querySelector(`.time-slot[data-day="${d}"][data-slot="${slot.id}"]`)?.classList.add('current-now'); } }
+        function updateLiveStatus() { const now = new Date(); const d = now.getDay(); const m = now.getHours()*60 + now.getMinutes(); document.querySelectorAll('.time-slot.drag-over').forEach(el => el.classList.remove('drag-over')); document.querySelectorAll('.day-column').forEach(c => c.classList.remove('current-day')); if(d>=1 && d<=5) document.getElementById(`day-${d}`).classList.add('current-day'); document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('current-now')); if(d>=1 && d<=5) { const slot = TIME_SLOTS[d].find(s => m >= s.start && m <= s.end); if(slot) document.querySelector(`.time-slot[data-day="${d}"][data-slot="${slot.id}"]`)?.classList.add('current-now'); } }
         function exportToImage() { const el = document.getElementById('schedule-container'); const h = el.style.height; el.style.height = 'auto'; html2canvas(el, { scale: 2, backgroundColor: '#f1f5f9' }).then(c => { const a = document.createElement('a'); a.download = `schedule_week_${currentWeek}.png`; a.href = c.toDataURL(); a.click(); el.style.height = h; }); }
         function downloadBackup() { const data = JSON.stringify({ lessons, teachersList, subjectsList, groupsList }, null, 2); const blob = new Blob([data], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `backup.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
         function uploadBackup(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); lessons = sanitizeData(data.lessons); saveToLocal(); renderLessons(); } catch (err) { alert('Error'); } }; reader.readAsText(file); }
@@ -886,7 +994,402 @@
         function clearForm() { ['inputGroup','inputSubject','inputTeacher','inputTeacher2','inputNote','inputRoomNumber'].forEach(id=>document.getElementById(id).value=''); document.getElementById('inputRoomSelect').value=''; document.getElementById('inputType').value='Лекція'; toggleCustomRoom(); toggleTeacher2(); }
         function toggleCustomRoom() { document.getElementById('customRoomGroup').style.display = document.getElementById('inputRoomSelect').value === 'custom' ? 'block' : 'none'; }
         function toggleTeacher2() { document.getElementById('teacher2Group').style.display = document.getElementById('inputType').value === 'Лабораторна' ? 'block' : 'none'; }
-        function openStats() { document.getElementById('statsWeekNum').innerText = currentWeek === 1 ? 'I' : 'II'; const c = document.getElementById('statsContent'); c.innerHTML = ''; const active = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek)); if(!active.length) { c.innerHTML = '<div style="text-align:center;color:gray;">Пусто</div>'; } else { const dc = {1:0,2:0,3:0,4:0,5:0}; active.forEach(l => dc[l.day]++); const maxD = Math.max(...Object.values(dc)) || 1; let h = `<div class="stat-section"><div class="stat-title">По днях</div>`; ['Пн','Вт','Ср','Чт','Пт'].forEach((d,i) => h+=`<div class="stat-row"><div class="stat-label">${d}</div><div class="stat-bar-container"><div class="stat-bar bar-blue" style="width:${(dc[i+1]/maxD)*100}%"></div></div><div class="stat-value">${dc[i+1]}</div></div>`); h+='</div>'; c.innerHTML = h; } document.getElementById('statsModal').classList.add('open'); }
+        
+        // --- СТАТИСТИКА ---
+        let currentStatsTab = 'general';
+        
+        function switchStatsTab(tab) {
+            currentStatsTab = tab;
+            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderStats();
+        }
+        
+        function openStats() { 
+            document.getElementById('statsWeekNum').innerText = currentWeek === 1 ? 'I' : 'II';
+            currentStatsTab = 'general';
+            document.querySelectorAll('.stats-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector('.stats-tab').classList.add('active');
+            renderStats();
+            document.getElementById('statsModal').classList.add('open');
+        }
+        
+        function renderStats() {
+            const c = document.getElementById('statsContent');
+            const active = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek));
+            
+            if(!active.length) {
+                c.innerHTML = '<div style="text-align:center;color:gray;padding:2rem;">Немає пар на цьому тижні</div>';
+                return;
+            }
+            
+            if(currentStatsTab === 'general') {
+                c.innerHTML = generateGeneralStats(active);
+            } else if(currentStatsTab === 'teachers') {
+                c.innerHTML = generateTeachersStats(active);
+            } else if(currentStatsTab === 'rooms') {
+                c.innerHTML = generateRoomsStats(active);
+            }
+        }
+        
+        function generateGeneralStats(active) {
+            const allLessons = lessons; // Для порівняння тижнів
+            const week1 = allLessons.filter(l => parseInt(l.week) === 1);
+            const week2 = allLessons.filter(l => parseInt(l.week) === 2);
+            
+            // Загальна статистика
+            const totalHours = active.length * 1.5; // Кожна пара = 1.5 год
+            const uniqueGroups = [...new Set(active.map(l => l.group))].filter(g => g);
+            const uniqueTeachers = [...new Set(active.flatMap(l => [l.teacher, l.teacher2].filter(t => t)))];
+            
+            // Розподіл по днях
+            const dc = {1:0,2:0,3:0,4:0,5:0};
+            active.forEach(l => dc[l.day]++);
+            const maxD = Math.max(...Object.values(dc)) || 1;
+            
+            // Порожні слоти
+            const emptySlots = {};
+            [1,2,3,4,5].forEach(day => {
+                emptySlots[day] = [];
+                [1,2,3,4,5].forEach(slot => {
+                    if(!active.some(l => l.day === day && l.slot === slot)) {
+                        emptySlots[day].push(slot);
+                    }
+                });
+            });
+            
+            // Завантаженість груп
+            const groupLoads = {};
+            active.forEach(l => {
+                if(l.group) {
+                    groupLoads[l.group] = (groupLoads[l.group] || 0) + 1;
+                }
+            });
+            const sortedGroups = Object.entries(groupLoads).sort((a,b) => b[1] - a[1]);
+            const maxGroupLoad = sortedGroups.length > 0 ? sortedGroups[0][1] : 1;
+            
+            let html = `
+                <!-- Швидкі картки -->
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <div class="stat-card-value">${active.length}</div>
+                        <div class="stat-card-label">Всього пар</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value">${totalHours.toFixed(1)}</div>
+                        <div class="stat-card-label">Годин</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value">${uniqueGroups.length}</div>
+                        <div class="stat-card-label">Груп</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-value">${uniqueTeachers.length}</div>
+                        <div class="stat-card-label">Викладачів</div>
+                    </div>
+                </div>
+                
+                <!-- Розподіл по днях -->
+                <div class="stat-section">
+                    <div class="stat-title">📊 Розподіл по днях тижня</div>
+                    ${['Понеділок','Вівторок','Середа','Четвер',"П'ятниця"].map((d,i) => `
+                        <div class="stat-row">
+                            <div class="stat-label">${d}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar bar-blue" style="width:${(dc[i+1]/maxD)*100}%"></div>
+                            </div>
+                            <div class="stat-value">${dc[i+1]}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Порівняння тижнів -->
+                <div class="stat-section">
+                    <div class="stat-title">⚖️ Порівняння тижнів</div>
+                    <div class="stat-row">
+                        <div class="stat-label">Тиждень I</div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar bar-green" style="width:${week1.length > 0 ? (week1.length/Math.max(week1.length, week2.length)*100) : 0}%"></div>
+                        </div>
+                        <div class="stat-value">${week1.length}</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label">Тиждень II</div>
+                        <div class="stat-bar-container">
+                            <div class="stat-bar bar-purple" style="width:${week2.length > 0 ? (week2.length/Math.max(week1.length, week2.length)*100) : 0}%"></div>
+                        </div>
+                        <div class="stat-value">${week2.length}</div>
+                    </div>
+                    <div class="stat-row">
+                        <div class="stat-label" style="color:#64748b;">Різниця</div>
+                        <div class="stat-bar-container"></div>
+                        <div class="stat-value" style="color:${week1.length === week2.length ? '#10b981' : '#f59e0b'};">
+                            ${Math.abs(week1.length - week2.length)}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Завантаженість груп -->
+                ${sortedGroups.length > 0 ? `
+                <div class="stat-section">
+                    <div class="stat-title">👥 Топ-5 найзавантаженіших груп</div>
+                    ${sortedGroups.slice(0, 5).map(([group, count]) => `
+                        <div class="stat-row">
+                            <div class="stat-label">${group}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar bar-orange" style="width:${(count/maxGroupLoad)*100}%"></div>
+                            </div>
+                            <div class="stat-value">${count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+                
+                <!-- Порожні слоти -->
+                <div class="stat-section">
+                    <div class="stat-title">⬜ Вільні слоти (можна додати пари)</div>
+                    <div class="empty-slots">
+                        ${['Пн','Вт','Ср','Чт','Пт'].map((day, i) => `
+                            <div class="empty-slot-day">
+                                <div class="empty-slot-day-name">${day}</div>
+                                <div class="empty-slot-list">
+                                    ${emptySlots[i+1].length === 0 ? 
+                                        '<div class="empty-slot-item" style="border-style:solid;color:#10b981;border-color:#86efac;">Заповнено</div>' : 
+                                        emptySlots[i+1].map(slot => `<div class="empty-slot-item">${slot} пара</div>`).join('')
+                                    }
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            return html;
+        }
+        
+        function generateTeachersStats(active) {
+            // Завантаженість по викладачах
+            const teacherLoads = {};
+            const teacherDays = {};
+            const teacherGroups = {};
+            
+            active.forEach(l => {
+                [l.teacher, l.teacher2].filter(t => t).forEach(teacher => {
+                    teacherLoads[teacher] = (teacherLoads[teacher] || 0) + 1;
+                    
+                    if(!teacherDays[teacher]) teacherDays[teacher] = {1:0,2:0,3:0,4:0,5:0};
+                    teacherDays[teacher][l.day]++;
+                    
+                    if(!teacherGroups[teacher]) teacherGroups[teacher] = new Set();
+                    if(l.group) teacherGroups[teacher].add(l.group);
+                });
+            });
+            
+            const sortedTeachers = Object.entries(teacherLoads).sort((a,b) => b[1] - a[1]);
+            const maxLoad = sortedTeachers.length > 0 ? sortedTeachers[0][1] : 1;
+            
+            let html = `
+                <!-- Топ викладачів -->
+                <div class="stat-section">
+                    <div class="stat-title">👨‍🏫 Навантаження викладачів</div>
+                    ${sortedTeachers.map(([teacher, count]) => `
+                        <div class="stat-row">
+                            <div class="stat-label" title="${teacher}">${teacher}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar bar-blue" style="width:${(count/maxLoad)*100}%"></div>
+                            </div>
+                            <div class="stat-value">${count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Детальна інформація по викладачах -->
+                ${sortedTeachers.slice(0, 10).map(([teacher, count]) => {
+                    const days = teacherDays[teacher];
+                    const groups = Array.from(teacherGroups[teacher] || []);
+                    const maxDayLoad = Math.max(...Object.values(days));
+                    
+                    return `
+                    <div class="stat-section">
+                        <div class="stat-title">📌 ${teacher} (${count} пар, ${(count * 1.5).toFixed(1)} год)</div>
+                        
+                        <!-- Розподіл по днях -->
+                        <div style="margin-bottom:1rem;">
+                            <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.5rem;font-weight:600;">Завантаженість по днях:</div>
+                            ${['Пн','Вт','Ср','Чт','Пт'].map((d,i) => `
+                                <div class="stat-row">
+                                    <div class="stat-label">${d}</div>
+                                    <div class="stat-bar-container">
+                                        <div class="stat-bar bar-green" style="width:${days[i+1] > 0 ? (days[i+1]/maxDayLoad)*100 : 0}%"></div>
+                                    </div>
+                                    <div class="stat-value">${days[i+1]}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <!-- Групи -->
+                        ${groups.length > 0 ? `
+                        <div>
+                            <div style="font-size:0.8rem;color:#64748b;margin-bottom:0.5rem;font-weight:600;">Групи в роботі (${groups.length}):</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                                ${groups.map(g => `<span style="background:#e0f2fe;color:#0369a1;padding:4px 8px;border-radius:4px;font-size:0.75rem;font-weight:600;">${g}</span>`).join('')}
+                            </div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    `;
+                }).join('')}
+            `;
+            
+            return html;
+        }
+        
+        function generateRoomsStats(active) {
+            // Використання аудиторій
+            const roomUsage = {};
+            const roomTimeSlots = {};
+            const roomConflicts = [];
+            
+            active.forEach(l => {
+                if(l.room) {
+                    roomUsage[l.room] = (roomUsage[l.room] || 0) + 1;
+                    
+                    const key = `${l.room}_${l.day}_${l.slot}`;
+                    if(!roomTimeSlots[key]) {
+                        roomTimeSlots[key] = [];
+                    }
+                    roomTimeSlots[key].push(l);
+                }
+            });
+            
+            // Знаходимо конфлікти (одна аудиторія в один час для кількох груп)
+            Object.entries(roomTimeSlots).forEach(([key, lessonsInSlot]) => {
+                if(lessonsInSlot.length > 1) {
+                    const [room, day, slot] = key.split('_');
+                    roomConflicts.push({
+                        room,
+                        day: parseInt(day),
+                        slot: parseInt(slot),
+                        lessons: lessonsInSlot
+                    });
+                }
+            });
+            
+            const sortedRooms = Object.entries(roomUsage).sort((a,b) => b[1] - a[1]);
+            const maxRoomUsage = sortedRooms.length > 0 ? sortedRooms[0][1] : 1;
+            
+            // Пікові години (найбільше завантажені слоти)
+            const slotLoads = {};
+            active.forEach(l => {
+                if(l.room) {
+                    const key = `${l.day}_${l.slot}`;
+                    slotLoads[key] = (slotLoads[key] || 0) + 1;
+                }
+            });
+            const sortedSlots = Object.entries(slotLoads).sort((a,b) => b[1] - a[1]);
+            
+            // Вільні аудиторії по часам
+            const allRooms = [...new Set(active.map(l => l.room).filter(r => r))];
+            const freeRoomsBySlot = {};
+            
+            [1,2,3,4,5].forEach(day => {
+                [1,2,3,4,5].forEach(slot => {
+                    const key = `${day}_${slot}`;
+                    const usedRooms = active.filter(l => l.day === day && l.slot === slot && l.room).map(l => l.room);
+                    const freeRooms = allRooms.filter(r => !usedRooms.includes(r));
+                    if(freeRooms.length > 0) {
+                        freeRoomsBySlot[key] = freeRooms;
+                    }
+                });
+            });
+            
+            let html = `
+                <!-- Використання аудиторій -->
+                <div class="stat-section">
+                    <div class="stat-title">🏢 Топ найзавантаженіших аудиторій</div>
+                    ${sortedRooms.slice(0, 10).map(([room, count]) => `
+                        <div class="stat-row">
+                            <div class="stat-label">${room}</div>
+                            <div class="stat-bar-container">
+                                <div class="stat-bar bar-blue" style="width:${(count/maxRoomUsage)*100}%"></div>
+                            </div>
+                            <div class="stat-value">${count}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- Конфлікти аудиторій -->
+                ${roomConflicts.length > 0 ? `
+                <div class="stat-section">
+                    <div class="stat-title">⚠️ Конфлікти аудиторій (${roomConflicts.length})</div>
+                    ${roomConflicts.map(conflict => {
+                        const dayName = ['','Пн','Вт','Ср','Чт','Пт'][conflict.day];
+                        const timeSlot = TIME_SLOTS[conflict.day][conflict.slot - 1];
+                        return `
+                        <div class="conflict-item">
+                            <div class="conflict-header">
+                                🚨 ${conflict.room} — ${dayName}, ${conflict.slot} пара (${timeSlot.time})
+                            </div>
+                            <div class="conflict-details">
+                                ${conflict.lessons.map(l => `• ${l.group || 'Без групи'}: ${l.subject} (${l.teacher})`).join('<br>')}
+                            </div>
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+                ` : `
+                <div class="stat-section">
+                    <div class="stat-title">✅ Конфлікти аудиторій</div>
+                    <div style="text-align:center;padding:1rem;color:#059669;background:#d1fae5;border-radius:8px;font-weight:600;">
+                        Конфліктів не виявлено
+                    </div>
+                </div>
+                `}
+                
+                <!-- Пікові години -->
+                <div class="stat-section">
+                    <div class="stat-title">📈 Пікові години (найбільше завантажені)</div>
+                    <div class="stat-list">
+                        ${sortedSlots.slice(0, 5).map(([key, count]) => {
+                            const [day, slot] = key.split('_');
+                            const dayName = ['','Пн','Вт','Ср','Чт','Пт'][parseInt(day)];
+                            const timeSlot = TIME_SLOTS[parseInt(day)][parseInt(slot) - 1];
+                            return `
+                            <div class="stat-list-item">
+                                <div class="stat-list-icon">${slot}</div>
+                                <div class="stat-list-text">${dayName}, ${timeSlot.time}</div>
+                                <div class="stat-list-value">${count} ауд.</div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <!-- Вільні аудиторії -->
+                ${Object.keys(freeRoomsBySlot).length > 0 ? `
+                <div class="stat-section">
+                    <div class="stat-title">🆓 Приклади вільних аудиторій</div>
+                    <div class="stat-list">
+                        ${Object.entries(freeRoomsBySlot).slice(0, 8).map(([key, rooms]) => {
+                            const [day, slot] = key.split('_');
+                            const dayName = ['','Пн','Вт','Ср','Чт','Пт'][parseInt(day)];
+                            const timeSlot = TIME_SLOTS[parseInt(day)][parseInt(slot) - 1];
+                            return `
+                            <div class="stat-list-item">
+                                <div class="stat-list-icon">${slot}</div>
+                                <div class="stat-list-text">${dayName}, ${timeSlot.time}</div>
+                                <div class="stat-list-value" style="font-size:0.7rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${rooms.join(', ')}">${rooms.slice(0,3).join(', ')}${rooms.length > 3 ? '...' : ''}</div>
+                            </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            return html;
+        }
+        
         function closeStats() { document.getElementById('statsModal').classList.remove('open'); }
         document.addEventListener('keydown', e => { if(e.key==='Escape') { if(actionState.active) cancelAction(); else if(highlightState.active) clearHighlight(); else closeModal(); closeStats(); } });
 
@@ -966,5 +1469,3 @@
     </script>
 </body>
 </html>
-
-
