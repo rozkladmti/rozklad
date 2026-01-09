@@ -26,8 +26,279 @@
             --diff-added: #dcfce7; --diff-added-border: #22c55e;
             --diff-removed: #fee2e2; --diff-removed-border: #ef4444;
             --diff-changed: #ffedd5; --diff-changed-border: #f97316;
+            
+            /* Додаткові змінні */
+            --text-primary: #0f172a;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --card-bg: white;
+            --day-column-bg: #e2e8f0;
         }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); margin: 0; padding: 1rem; color: #334155; }
+        
+        /* 🌙 Гарна темна тема з правильними контрастами */
+        body.dark-mode {
+            --univ-blue: #93c5fd;
+            --bg-color: #0a0e1a;
+            --card-shadow: 0 4px 6px -1px rgba(0,0,0,0.4);
+            --swap-mode-bg: #064e3b; --swap-mode-border: #34d399;
+            --move-mode-bg: #1e3a8a; --move-mode-border: #60a5fa;
+            --slot-bg: #1a1f2e; --slot-hatch: #232938;
+            --live-text: #fcd34d; --live-color: #fbbf24; --live-bg: #451a03; --live-border: #f59e0b;
+            
+            --diff-added: #065f46; --diff-added-border: #34d399;
+            --diff-removed: #991b1b; --diff-removed-border: #f87171;
+            --diff-changed: #92400e; --diff-changed-border: #fb923c;
+            
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --card-bg: #1e293b;
+            --day-column-bg: #1a222e;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); margin: 0; padding: 1rem; color: var(--text-primary); transition: background-color 0.3s ease, color 0.3s ease; }
+        
+
+        /* 🎨 Гарна темна тема */
+        body.dark-mode .top-bar { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            box-shadow: 0 8px 16px -4px rgba(0,0,0,0.4);
+            border: 1px solid #334155;
+        }
+        
+        body.dark-mode .day-column { 
+            background: var(--day-column-bg);
+            border: 1px solid #334155;
+        }
+        
+        body.dark-mode .day-header { 
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            color: #93c5fd;
+            border: 1px solid #475569;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .day-column.current-day {
+            background: #1a1a0f;
+            border-color: #854d0e;
+        }
+        
+        body.dark-mode .lesson-card { 
+            background: linear-gradient(135deg, var(--card-bg) 0%, #283548 100%);
+            color: var(--text-primary);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            border-left-width: 4px;
+        }
+        
+        body.dark-mode .lesson-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        
+        body.dark-mode .lesson-card[data-type="Лекція"] { border-left-color: #fb923c; }
+        body.dark-mode .lesson-card[data-type="Лабораторна"] { border-left-color: #34d399; }
+        body.dark-mode .lesson-card[data-type="Практична"] { border-left-color: #60a5fa; }
+        body.dark-mode .lesson-card[data-type="Семінар"] { border-left-color: #c084fc; }
+        
+        body.dark-mode .modal-box { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            color: var(--text-primary);
+            border: 1px solid #475569;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        
+        body.dark-mode .modal-header {
+            color: #93c5fd;
+            border-bottom: 2px solid #475569;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        body.dark-mode .form-input,
+        body.dark-mode .form-input option { 
+            background: #0f1419;
+            color: var(--text-primary);
+            border: 1px solid #475569;
+        }
+        
+        body.dark-mode .form-input:focus {
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+        }
+        
+        body.dark-mode .form-label { color: #94a3b8; }
+        
+        body.dark-mode .btn-secondary { 
+            background: #334155;
+            color: #e2e8f0;
+            border: 1px solid #475569;
+        }
+        
+        body.dark-mode .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-1px);
+        }
+        
+        body.dark-mode .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+        
+        body.dark-mode .btn-primary:hover {
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+        
+        body.dark-mode .time-slot { 
+            background-color: var(--slot-bg);
+            background-image: repeating-linear-gradient(45deg, var(--slot-bg), var(--slot-bg) 10px, var(--slot-hatch) 10px, var(--slot-hatch) 20px);
+            border-color: #334155;
+        }
+        
+        body.dark-mode .slot-number-badge { 
+            background: linear-gradient(135deg, #475569 0%, #64748b 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .time-text { color: #94a3b8; }
+        
+        body.dark-mode .group-badge { 
+            background: #334155;
+            color: #93c5fd;
+            border: 1px solid #475569;
+        }
+        
+        body.dark-mode .group-badge:hover {
+            background: #475569;
+            border-color: #60a5fa;
+        }
+        
+        body.dark-mode .type-badge {
+            opacity: 0.9;
+            font-weight: 700;
+        }
+        
+        body.dark-mode .lesson-card[data-type="Лекція"] .type-badge { 
+            background: #78350f;
+            color: #fbbf24;
+        }
+        body.dark-mode .lesson-card[data-type="Лабораторна"] .type-badge { 
+            background: #064e3b;
+            color: #34d399;
+        }
+        body.dark-mode .lesson-card[data-type="Практична"] .type-badge { 
+            background: #1e3a8a;
+            color: #60a5fa;
+        }
+        body.dark-mode .lesson-card[data-type="Семінар"] .type-badge { 
+            background: #581c87;
+            color: #c084fc;
+        }
+        
+        body.dark-mode .lesson-subject { color: #f1f5f9; }
+        body.dark-mode .lesson-footer { color: var(--text-secondary); }
+        
+        body.dark-mode .status-badge { 
+            opacity: 0.95;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .st-guest {
+            background: #334155;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+        }
+        
+        body.dark-mode .st-admin {
+            background: #1e3a8a;
+            color: #93c5fd;
+            border: 1px solid #3b82f6;
+        }
+        
+        body.dark-mode .btn-sync { 
+            background: linear-gradient(135deg, #334155 0%, #3f4c5e 100%);
+            color: #e2e8f0;
+            border: 1px solid #475569;
+        }
+        
+        body.dark-mode .btn-sync:hover { 
+            background: linear-gradient(135deg, #475569 0%, #556375 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        body.dark-mode .week-switcher { 
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+        
+        body.dark-mode .week-btn { color: #64748b; }
+        body.dark-mode .week-btn.active { 
+            background: linear-gradient(135deg, #334155 0%, #475569 100%);
+            color: #93c5fd;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        body.dark-mode .stats-container { color: var(--text-primary); }
+        
+        body.dark-mode .stat-card { 
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: 1px solid #475569;
+            color: var(--text-primary);
+        }
+        
+        body.dark-mode .stat-card-value { color: #93c5fd; }
+        body.dark-mode .stat-title { color: #93c5fd; }
+        body.dark-mode .stat-label { color: #cbd5e1; }
+        
+        body.dark-mode #compare-panel { 
+            background: linear-gradient(135deg, #78350f 0%, #92400e 100%);
+            border: 2px solid #f59e0b;
+            color: #fbbf24;
+        }
+        
+        body.dark-mode .action-btn { 
+            background: #334155;
+            border: 1px solid #475569;
+            color: #94a3b8;
+        }
+        
+        body.dark-mode .action-btn:hover { 
+            background: #475569;
+            color: #f1f5f9;
+        }
+        
+        body.dark-mode .add-btn-slot { color: #475569; }
+        body.dark-mode .time-slot:hover .add-btn-slot { 
+            color: #60a5fa;
+            background: rgba(30, 41, 59, 0.8);
+        }
+        
+        body.dark-mode .conflict-blinker {
+            background-color: rgba(239, 68, 68, 0.2) !important;
+            color: #fca5a5 !important;
+        }
+        
+        body.dark-mode #darkModeToggle {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #451a03;
+            border: 1px solid #fcd34d;
+        }
+        
+        body.dark-mode #darkModeToggle:hover {
+            background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+            box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+        }
+        
+        /* Покращені підказки для темної теми */
+        body.dark-mode [data-tooltip]::after {
+            background-color: #1e293b;
+            color: #f1f5f9;
+            border: 1px solid #475569;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        
+        body.dark-mode [data-tooltip]::before {
+            border-color: #1e293b transparent transparent transparent;
+        }
         
         .top-bar { background: white; padding: 1rem 1.5rem; border-radius: 0.75rem; box-shadow: var(--card-shadow); margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
         
@@ -638,6 +909,9 @@
                     <button class="btn-sync" onclick="logout()"><i class="fa-solid fa-right-from-bracket"></i> Вихід</button>
                 </div>
 
+                <button class="btn-sync" id="darkModeToggle" onclick="toggleDarkMode()" title="Темна тема">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
                 <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
                 <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
                 <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
@@ -1002,7 +1276,7 @@
                 <!-- Контакти -->
                 <div class="help-section" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem;">
                     <h3 class="help-title" style="margin-top: 0;">📧 Потрібна допомога?</h3>
-                    <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b6dfc2dbddd7d0d3d2c4d7f6d1dbd7dfda98d5d9db">[email&#160;protected]</a></strong></p>
+                    <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b6dfc2dbddd7d0d3d2c4d7f6d1dbd7dfda98d5d9db">itmkafedra@gmail.com</a></strong></p>
                     <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #64748b;">
                         <strong>Версія:</strong> 1.0 | 
                         <strong>Оновлено:</strong> Січень 2026
@@ -1250,7 +1524,40 @@
             redoBtn.disabled = !canRedo;
         }
 
+
+        // 🌙 Dark Mode
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            updateDarkModeIcon();
+        }
+        
+        function updateDarkModeIcon() {
+            const btn = document.getElementById('darkModeToggle');
+            if (!btn) return;
+            const icon = btn.querySelector('i');
+            if (document.body.classList.contains('dark-mode')) {
+                icon.className = 'fa-solid fa-sun';
+                btn.title = 'Світла тема';
+            } else {
+                icon.className = 'fa-solid fa-moon';
+                btn.title = 'Темна тема';
+            }
+        }
+        
+        function initDarkMode() {
+            const darkMode = localStorage.getItem('darkMode');
+            if (darkMode === 'enabled') {
+                document.body.classList.add('dark-mode');
+            }
+            updateDarkModeIcon();
+        }
+        
         function init() {
+            // Ініціалізація Dark Mode
+            initDarkMode();
+            
             // Перевірка readonly режиму для викладачів
             const urlParams = new URLSearchParams(window.location.search);
             const isReadOnly = urlParams.get('view') === 'readonly' || urlParams.get('teacher') === 'true';
