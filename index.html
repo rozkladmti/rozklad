@@ -342,6 +342,38 @@
             .compare-legend { flex-wrap: wrap; gap: 10px; font-size: 0.75rem; }
             .compare-legend > div:last-child { width: 100%; margin-left: 0; margin-top: 5px; text-align: center; }
             
+            /* Покращена панель фільтрів на мобільних */
+            #filter-panel { 
+                position: fixed !important;
+                top: auto !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                border-radius: 0 !important;
+                padding: 15px !important;
+                font-size: 0.9rem !important;
+                z-index: 1000 !important;
+                box-shadow: 0 -6px 12px -2px rgba(0,0,0,0.2) !important;
+                background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%) !important;
+                color: white !important;
+                border: none !important;
+            }
+            
+            #filter-panel button {
+                background: white !important;
+                color: #2563eb !important;
+                border: none !important;
+                padding: 8px 16px !important;
+                border-radius: 6px !important;
+                font-weight: 700 !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            }
+            
+            #filter-panel #filter-msg {
+                color: white !important;
+                font-weight: 700 !important;
+            }
+            
             /* Адаптивність статистики */
             .stat-cards { grid-template-columns: repeat(2, 1fr); }
             .empty-slots { grid-template-columns: 1fr; }
@@ -607,13 +639,13 @@
                 </div>
 
                 <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
-                <button class="btn-sync" onclick="openHelp()" title="Допомога" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></button>
                 <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
                 <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
                 <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
                     <i class="fa-solid fa-upload"></i>
                     <input type="file" id="fileInput" accept=".json" style="display: none;" onchange="uploadBackup(this)">
                 </label>
+                <button class="btn-sync" onclick="openHelp()" title="Допомога" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></button>
             </div>
         </div>
         
@@ -970,7 +1002,7 @@
                 <!-- Контакти -->
                 <div class="help-section" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem;">
                     <h3 class="help-title" style="margin-top: 0;">📧 Потрібна допомога?</h3>
-                    <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong>itmkafedra@gmail.com</strong></p>
+                    <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="b6dfc2dbddd7d0d3d2c4d7f6d1dbd7dfda98d5d9db">[email&#160;protected]</a></strong></p>
                     <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #64748b;">
                         <strong>Версія:</strong> 1.0 | 
                         <strong>Оновлено:</strong> Січень 2026
@@ -1052,7 +1084,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         // === ВАЖЛИВО! Вставте сюди URL Вашого скрипта ===
         const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyr9sUjBPCI3HyfEk9G3jrybFMFUNAJwOzXx_92xtD-E-tL9J0j9vhAHvFAguyV8sZsPQ/exec';
         const ADMIN_PASSWORD = 'admin';
@@ -1793,7 +1825,14 @@
             if (actionState.active) { 
                 if (actionState.type === 'move') performMoveToEmpty(day, slot); 
                 else alert("Ви в режимі Обміну. Клікніть на ІНШУ ПАРУ."); 
-            } else openNewModal(day, slot); 
+            } else {
+                // На мобільних відкриваємо тільки якщо клікнули на кнопку "+"
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && !e.target.closest('.add-btn-slot')) {
+                    return; // Ігноруємо випадкові торкання
+                }
+                openNewModal(day, slot);
+            }
         }
 
         function checkConflicts() { document.querySelectorAll('.lesson-card').forEach(c => c.classList.remove('conflict')); document.querySelectorAll('.conflict-blinker').forEach(el => el.classList.remove('conflict-blinker')); if(isCompareMode) return; const activeLessons = lessons.filter(l => parseInt(l.week) === parseInt(currentWeek)); const slotsMap = {}; activeLessons.forEach(l => { const k = `${l.day}-${l.slot}`; if (!slotsMap[k]) slotsMap[k] = []; slotsMap[k].push(l); }); for (const key in slotsMap) { const groupLessons = slotsMap[key]; if (groupLessons.length > 1) { for (let i = 0; i < groupLessons.length; i++) { for (let j = i + 1; j < groupLessons.length; j++) { const l1 = groupLessons[i]; const l2 = groupLessons[j]; const c1 = document.getElementById(l1.id); const c2 = document.getElementById(l2.id); if(!c1 || !c2) continue; let conflictFound = false; if (l1.room && l2.room && l1.room === l2.room) { conflictFound = true; c1.querySelector('.room-row')?.classList.add('conflict-blinker'); c2.querySelector('.room-row')?.classList.add('conflict-blinker'); } const t1 = [l1.teacher, l1.teacher2].filter(t => t); const t2 = [l2.teacher, l2.teacher2].filter(t => t); if (t1.some(t => t2.includes(t))) { conflictFound = true; c1.querySelector('.teacher-row')?.classList.add('conflict-blinker'); c2.querySelector('.teacher-row')?.classList.add('conflict-blinker'); } if (l1.group && l2.group) { const g1 = l1.group.split(',').map(s => s.trim()); const g2 = l2.group.split(',').map(s => s.trim()); if (g1.some(g => g2.includes(g))) { conflictFound = true; c1.querySelector('.group-badge')?.classList.add('conflict-blinker'); c2.querySelector('.group-badge')?.classList.add('conflict-blinker'); } } if (conflictFound) { c1.classList.add('conflict'); c2.classList.add('conflict'); } } } } } }
@@ -2408,6 +2447,7 @@
             const teacherName = params.get('teacher');
             const groupName = params.get('group');
 
+            // Підсвічуємо і на мобільних, і на десктопі
             setTimeout(() => {
                 if (teacherName) {
                     activateHighlight('teacher', teacherName, { stopPropagation: ()=>{} });
@@ -2822,12 +2862,7 @@
                         /* Кнопки експорту */
                         .export-btn { 
                             background: white;
-                            color: #b8956a; 
-                            padding: 8px 16px;
-                            border: 2px solid #b8956a; 
-                            border-radius: 6px;
-                            cursor: pointer;
-                            font-size: 11pt;
+                            color:    font-size: 11pt;
                             font-weight: 600;
                             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                             transition: all 0.2s;
