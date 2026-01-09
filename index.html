@@ -56,8 +56,8 @@
         .btn-sync { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 12px; border-radius: 6px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; transition: all 0.2s; white-space: nowrap; }
         .btn-sync:hover { background: #e2e8f0; transform: translateY(-1px); }
         .btn-sync:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-        .btn-primary { background: var(--univ-blue); color: white; border-color: var(--univ-blue); }
-        .btn-primary:hover { background: #1e293b; }
+        .btn-primary { background: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; }
+        .btn-primary:hover { background: #2563eb !important; box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.4); }
         .btn-manual-save { border-color: #bbf7d0; color: #166534; }
         .btn-manual-save:hover { background: #dcfce7; }
         .btn-export { color: #2563eb; border-color: #bfdbfe; background: #eff6ff; }
@@ -343,6 +343,123 @@
             .stats-tab { font-size: 0.8rem; padding: 6px 12px; white-space: nowrap; }
         }
         
+        /* Стилі для модального вікна допомоги */
+        .help-section {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .help-section:last-child {
+            border-bottom: none;
+        }
+        
+        .help-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--univ-blue);
+            margin: 0 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .help-item {
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+        }
+        
+        .help-icon-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.3rem;
+        }
+        
+        .help-icon {
+            font-size: 1.5rem;
+        }
+        
+        .help-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .help-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .help-button-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .help-btn-demo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        
+        .help-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            border: 1px solid;
+            font-size: 0.85rem;
+        }
+        
+        .help-button-item strong {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--univ-blue);
+            margin-bottom: 0.2rem;
+        }
+        
+        .help-button-item p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #64748b;
+            line-height: 1.4;
+        }
+        
+        .help-type-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .help-buttons-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         /* Гарні підказки замість стандартних */
         [data-tooltip] { position: relative; cursor: pointer; }
 
@@ -470,7 +587,7 @@
                     <button class="btn-sync" id="filterBtnGuest" onclick="toggleAdvancedSearch()" title="Пошук та фільтри"><i class="fa-solid fa-filter"></i> Фільтри</button>
                     <button class="btn-sync" onclick="reloadAll()" title="Оновити"><i class="fa-solid fa-rotate"></i></button>
                     <button class="btn-sync btn-primary" onclick="guestPropose()" title="Надіслати зміни"><i class="fa-solid fa-paper-plane"></i>Запропонувати зміни</button>
-                    <button class="btn-sync" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
+                    <button class="btn-sync" id="loginBtn" onclick="showLogin()"><i class="fa-solid fa-lock"></i> Вхід</button>
                 </div>
 
                 <div class="admin-controls">
@@ -482,6 +599,7 @@
                 </div>
 
                 <button class="btn-sync" onclick="openStats()" title="Статистика"><i class="fa-solid fa-chart-simple"></i></button>
+                <button class="btn-sync" onclick="openHelp()" title="Допомога" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></button>
                 <button class="btn-sync btn-export" onclick="exportToImage()" title="PNG"><i class="fa-solid fa-camera"></i></button>
                 <button class="btn-sync btn-backup" onclick="downloadBackup()" title="Бекап"><i class="fa-solid fa-download"></i></button>
                 <label class="btn-sync btn-backup" title="Відновити" style="cursor: pointer;">
@@ -548,6 +666,315 @@
             
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeStats()">Закрити</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно Допомога -->
+    <div class="modal-overlay" id="helpModal" onclick="if(event.target === this) closeHelp()">
+        <div class="modal-box" style="width: 800px; max-width: 95vw; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>📚 Інструкція користувача</span>
+                <button class="btn btn-secondary" onclick="closeHelp()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">✕</button>
+            </div>
+            
+            <div id="helpContent" style="font-size: 0.9rem; line-height: 1.6;">
+                <!-- Основні функції -->
+                <div class="help-section">
+                    <h3 class="help-title">🎯 Основні функції</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">📅</span>
+                            <strong>Перемикання тижнів</strong>
+                        </div>
+                        <p>Використовуйте кнопки <strong>Тиждень I</strong> та <strong>Тиждень II</strong> для перегляду чисельника та знаменника.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">➕</span>
+                            <strong>Додавання пари</strong>
+                        </div>
+                        <p>Натисніть на порожній часовий слот (сіра область з "+") щоб додати нову пару.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">✏️</span>
+                            <strong>Редагування пари</strong>
+                        </div>
+                        <p>Натисніть на картку пари або використайте меню "⋮" → "Редагувати".</p>
+                    </div>
+                </div>
+
+                <!-- Режими роботи -->
+                <div class="help-section">
+                    <h3 class="help-title">👤 Режими роботи</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-badge" style="background: #e2e8f0; color: #475569;">
+                            <i class="fa-solid fa-user"></i> Гість
+                        </div>
+                        <p><strong>Для викладачів:</strong> Перегляд розкладу, фільтрація та можливість запропонувати зміни адміну.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-badge" style="background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd;">
+                            <i class="fa-solid fa-user-shield"></i> Адмін
+                        </div>
+                        <p><strong>Для адміністратора:</strong> Повний контроль – редагування, збереження, схвалення змін від викладачів.</p>
+                    </div>
+                </div>
+
+                <!-- Кнопки управління (Гість) -->
+                <div class="help-section">
+                    <h3 class="help-title">🔘 Кнопки управління (Режим Гість)</h3>
+                    
+                    <div class="help-buttons-grid">
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-rotate-left"></i></span>
+                            <span class="help-btn-demo"><i class="fa-solid fa-rotate-right"></i></span>
+                            <div>
+                                <strong>Undo / Redo</strong>
+                                <p>Скасування та повтор останніх дій</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-filter"></i></span>
+                            <div>
+                                <strong>Фільтри</strong>
+                                <p>Розширений пошук по викладачах, групах, предметах</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-rotate"></i></span>
+                            <div>
+                                <strong>Оновити</strong>
+                                <p>Завантажити найсвіжіші дані з хмари</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="background: #3b82f6; color: white;"><i class="fa-solid fa-paper-plane"></i></span>
+                            <div>
+                                <strong>Запропонувати зміни</strong>
+                                <p>Відправити свої правки на розгляд адміну</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-lock"></i></span>
+                            <div>
+                                <strong>Вхід</strong>
+                                <p>Авторизація адміністратора</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки управління (Адмін) -->
+                <div class="help-section">
+                    <h3 class="help-title">🔘 Додаткові кнопки (Режим Адмін)</h3>
+                    
+                    <div class="help-buttons-grid">
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-user-group"></i></span>
+                            <div>
+                                <strong>Викладачі</strong>
+                                <p>Генерація персональних розкладів для викладачів у форматі PDF</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="background: #dcfce7; color: #166534; border-color: #bbf7d0;"><i class="fa-solid fa-floppy-disk"></i></span>
+                            <div>
+                                <strong>Зберегти</strong>
+                                <p>Збереження змін у хмару</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-right-from-bracket"></i></span>
+                            <div>
+                                <strong>Вихід</strong>
+                                <p>Повернутися до режиму гостя</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Додаткові інструменти -->
+                <div class="help-section">
+                    <h3 class="help-title">🛠 Додаткові інструменти</h3>
+                    
+                    <div class="help-buttons-grid">
+                        <div class="help-button-item">
+                            <span class="help-btn-demo"><i class="fa-solid fa-chart-simple"></i></span>
+                            <div>
+                                <strong>Статистика</strong>
+                                <p>Аналітика: завантаженість викладачів, груп, аудиторій</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #8b5cf6; border-color: #ddd6fe;"><i class="fa-solid fa-circle-question"></i></span>
+                            <div>
+                                <strong>Допомога</strong>
+                                <p>Ця інструкція :)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #2563eb; background: #eff6ff; border-color: #bfdbfe;"><i class="fa-solid fa-camera"></i></span>
+                            <div>
+                                <strong>Експорт PNG</strong>
+                                <p>Зберегти розклад як зображення</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #4f46e5; border-color: #c7d2fe;"><i class="fa-solid fa-download"></i></span>
+                            <div>
+                                <strong>Бекап</strong>
+                                <p>Завантажити резервну копію</p>
+                            </div>
+                        </div>
+                        
+                        <div class="help-button-item">
+                            <span class="help-btn-demo" style="color: #4f46e5; border-color: #c7d2fe;"><i class="fa-solid fa-upload"></i></span>
+                            <div>
+                                <strong>Відновлення</strong>
+                                <p>Відновити дані з резервної копії</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Операції з парами -->
+                <div class="help-section">
+                    <h3 class="help-title">🎬 Операції з парами</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #d97706; background: #fef3c7; border-color: #fde68a;">
+                                <i class="fa-solid fa-copy"></i>
+                            </span>
+                            <strong>Дублювати</strong>
+                        </div>
+                        <p>Копіювати пару на інший час або тиждень.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #3b82f6; background: #eff6ff; border-color: #bfdbfe;">
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </span>
+                            <strong>Перемістити</strong>
+                        </div>
+                        <p>Перенести пару в інший часовий слот. Можна також перетягнути мишкою.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #8b5cf6; background: #f5f3ff; border-color: #ddd6fe;">
+                                <i class="fa-solid fa-right-left"></i>
+                            </span>
+                            <strong>Поміняти місцями</strong>
+                        </div>
+                        <p>Поміняти дві пари місцями.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #06b6d4; background: #ecfeff; border-color: #a5f3fc;">
+                                <i class="fa-solid fa-pen"></i>
+                            </span>
+                            <strong>Редагувати</strong>
+                        </div>
+                        <p>Змінити інформацію про пару.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-action-btn" style="color: #ef4444; background: #fef2f2; border-color: #fecaca;">
+                                <i class="fa-solid fa-trash"></i>
+                            </span>
+                            <strong>Видалити</strong>
+                        </div>
+                        <p>Видалити пару з розкладу.</p>
+                    </div>
+                </div>
+
+                <!-- Швидкі фільтри -->
+                <div class="help-section">
+                    <h3 class="help-title">⚡ Швидкі фільтри</h3>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">👥</span>
+                            <strong>Фільтр по групі</strong>
+                        </div>
+                        <p>Натисніть на бейдж групи (наприклад, "МБА 11") щоб підсвітити всі пари цієї групи.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <div class="help-icon-group">
+                            <span class="help-icon">👨‍🏫</span>
+                            <strong>Фільтр по викладачу</strong>
+                        </div>
+                        <p>Натисніть на ім'я викладача щоб побачити всі його пари.</p>
+                    </div>
+                    
+                    <div class="help-item">
+                        <p><em>Щоб вимкнути фільтр, натисніть на хрестик у синій панелі зверху або клікніть у порожнє місце.</em></p>
+                    </div>
+                </div>
+
+                <!-- Підказки та секрети -->
+                <div class="help-section">
+                    <h3 class="help-title">💡 Корисні підказки</h3>
+                    
+                    <ul style="padding-left: 1.5rem; margin: 0.5rem 0;">
+                        <li style="margin-bottom: 0.5rem;"><strong>Поточний день</strong> підсвічується жовтим фоном</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Поточна пара</strong> має яскравішу рамку</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Конфлікти</strong> (співпадіння викладачів/аудиторій) позначаються червоним</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Автозбереження</strong> працює в фоновому режимі для адмінів</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Історія змін</strong> зберігає до 20 останніх дій</li>
+                        <li style="margin-bottom: 0.5rem;"><strong>Drag & Drop:</strong> Можна перетягувати пари мишкою між слотами</li>
+                    </ul>
+                </div>
+
+                <!-- Типи занять -->
+                <div class="help-section">
+                    <h3 class="help-title">🎨 Типи занять</h3>
+                    
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px;">
+                        <span class="help-type-badge" style="background: #fef3c7; color: #d97706;">Лекція</span>
+                        <span class="help-type-badge" style="background: #d1fae5; color: #059669;">Лабораторна</span>
+                        <span class="help-type-badge" style="background: #dbeafe; color: #2563eb;">Практична</span>
+                        <span class="help-type-badge" style="background: #ede9fe; color: #7c3aed;">Семінар</span>
+                    </div>
+                </div>
+
+                <!-- Контакти -->
+                <div class="help-section" style="background: #f8fafc; padding: 1rem; border-radius: 0.5rem; margin-top: 1.5rem;">
+                    <h3 class="help-title" style="margin-top: 0;">📧 Потрібна допомога?</h3>
+                    <p style="margin: 0.5rem 0;">Якщо у вас виникли питання або знайшли помилку, напишіть нам на адресу: <strong>itmkafedra@gmail.com</strong></p>
+                    <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #64748b;">
+                        <strong>Версія:</strong> 1.0 | 
+                        <strong>Оновлено:</strong> Січень 2026
+                    </p>
+                    <p style="margin: 0.8rem 0 0 0; font-size: 0.8rem; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 0.8rem;">
+                        © 2026 Кафедра Менеджменту ІТ-сфери, ЛНУВМБ імені С.З. Гжицького
+                    </p>
+                </div>
+            </div>
+            
+            <div class="modal-actions" style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #e2e8f0;">
+                <button class="btn btn-primary" onclick="closeHelp()">Зрозуміло!</button>
             </div>
         </div>
     </div>
@@ -781,12 +1208,23 @@
             
             undoBtn.disabled = !canUndo;
             redoBtn.disabled = !canRedo;
-            
-            undoCount.textContent = canUndo ? `(${historyIndex})` : '';
-            redoCount.textContent = canRedo ? `(${history.length - historyIndex - 1})` : '';
         }
 
         function init() {
+            // Перевірка readonly режиму для викладачів
+            const urlParams = new URLSearchParams(window.location.search);
+            const isReadOnly = urlParams.get('view') === 'readonly' || urlParams.get('teacher') === 'true';
+            
+            if(isReadOnly) {
+                // Приховуємо кнопку "Вхід" для викладачів
+                const loginBtn = document.getElementById('loginBtn');
+                if(loginBtn) {
+                    loginBtn.style.display = 'none';
+                }
+                // Зберігаємо в sessionStorage що це readonly режим
+                sessionStorage.setItem('readonlyMode', 'true');
+            }
+            
             if(localStorage.getItem('isAdmin') === 'true') setAdminMode(true);
             loadFromLocal();
             renderGrid();
@@ -834,7 +1272,11 @@
                 }));
         }
 
-        function showLogin() { 
+        function showLogin() {
+            // Блокуємо вхід в readonly режимі
+            if(sessionStorage.getItem('readonlyMode') === 'true') {
+                return;
+            }
             const m = document.getElementById('loginModal'); const i = document.getElementById('adminPass'); 
             m.classList.add('open'); i.value=''; i.focus(); 
             i.onkeydown = (e) => { if(e.key==='Enter') processLogin(); if(e.key==='Escape') closeLoginModal(); }; 
@@ -854,6 +1296,10 @@
             reloadAll();
         }
         function setAdminMode(val) {
+            // Блокуємо встановлення адмін режиму в readonly
+            if(sessionStorage.getItem('readonlyMode') === 'true' && val === true) {
+                return;
+            }
             isAdmin = val;
             localStorage.setItem('isAdmin', val);
             document.body.classList.toggle('is-admin', val);
@@ -1234,7 +1680,6 @@
         
         function handleDragStart(e) { if(actionState.active || isCompareMode) { e.preventDefault(); return; } e.dataTransfer.setData('text/plain', this.id); actionState.type='move'; }
         function handleDragOver(e) { e.preventDefault(); if(!actionState.active && !isCompareMode) this.classList.add('drag-over'); }
-        function handleDragLeave(e) { this.classList.remove('drag-over'); }
         function handleDrop(e) { e.preventDefault(); this.classList.remove('drag-over'); if(isCompareMode) return; const id = e.dataTransfer.getData('text/plain'); const slotEl = e.target.closest('.time-slot'); if(id && slotEl) { const idx = lessons.findIndex(l => l.id === id); if(idx > -1) { saveState(); lessons[idx].day = parseInt(slotEl.dataset.day); lessons[idx].slot = parseInt(slotEl.dataset.slot); lessons[idx].week = parseInt(currentWeek); finalizeAction(); } } }
         function startMove(id, title, e) { 
             e.stopPropagation(); 
@@ -1931,6 +2376,14 @@
         }
         
         function closeStats() { document.getElementById('statsModal').classList.remove('open'); }
+        
+        function openHelp() {
+            document.getElementById('helpModal').classList.add('open');
+        }
+        
+        function closeHelp() {
+            document.getElementById('helpModal').classList.remove('open');
+        }
         document.addEventListener('keydown', e => { 
             if(e.key==='Escape') { 
                 if(duplicateState.active) cancelDuplication(); 
@@ -2184,15 +2637,10 @@
             // Створюємо HTML для експорту
             const html = generateTeacherScheduleHTML(teacherName, teacherLessons);
             
-            // Відкриваємо у новому вікні для друку
+            // Відкриваємо у новому вікні
             const printWindow = window.open('', '_blank');
             printWindow.document.write(html);
             printWindow.document.close();
-            
-            // Автоматично відкриваємо діалог друку
-            setTimeout(() => {
-                printWindow.print();
-            }, 500);
         }
         
         function generateTeacherScheduleHTML(teacherName, teacherLessons) {
@@ -2243,6 +2691,7 @@
                 <head>
                     <meta charset="UTF-8">
                     <title>Розклад - ${teacherName}</title>
+                    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
                     <style>
                         @page {
                             margin: 2cm 1.5cm;
@@ -2354,24 +2803,40 @@
                             font-size: 12pt;
                         }
                         
-                        /* Кнопка друку */
-                        .print-btn { 
-                            background: linear-gradient(135deg, #d4a574 0%, #b8956a 100%);
-                            color: white; 
-                            padding: 12px 24px;
-                            border: none; 
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 14pt;
-                            font-weight: 600;
-                            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        /* Контейнер для кнопок */
+                        .action-buttons {
+                            display: flex;
+                            gap: 10px;
                             margin-bottom: 20px;
-                            transition: all 0.2s;
+                            flex-wrap: wrap;
                         }
                         
-                        .print-btn:hover {
-                            transform: translateY(-2px);
-                            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+                        /* Кнопки експорту */
+                        .export-btn { 
+                            background: white;
+                            color: #b8956a; 
+                            padding: 8px 16px;
+                            border: 2px solid #b8956a; 
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 11pt;
+                            font-weight: 600;
+                            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            transition: all 0.2s;
+                            display: flex;
+                            align-items: center;
+                            gap: 6px;
+                        }
+                        
+                        .export-btn:hover {
+                            background: #b8956a;
+                            color: white;
+                            transform: translateY(-1px);
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                        }
+                        
+                        .export-btn i {
+                            font-size: 13pt;
                         }
                         
                         /* Для друку */
@@ -2401,7 +2866,11 @@
                     </style>
                 </head>
                 <body>
-                    <button class="print-btn no-print" onclick="window.print()">🖨️ Друкувати / Зберегти PDF</button>
+                    <div class="action-buttons no-print">
+                        <button class="export-btn" onclick="window.print()">
+                            <i class="fa-solid fa-print"></i> Друкувати / Зберегти PDF
+                        </button>
+                    </div>
                     
                     <!-- Верхній колонтитул з інформацією -->
                     <div class="page-header">
